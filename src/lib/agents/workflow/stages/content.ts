@@ -1,5 +1,5 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { ContentOutputSchema } from "@/lib/agents/schemas";
 import { contentPrompt } from "@/lib/agents/prompts/tasks";
 import { contentScore, score20 } from "@/lib/agents/scoring";
@@ -72,7 +72,7 @@ export async function contentStage(ctx: WorkflowContext) {
           reels_hook: idea.reels_hook,
           reels_script: idea.reels_script,
           outline: idea.outline,
-        } as Json,
+        },
         score_trend: score20(s.trend),
         score_originality: score20(s.originality),
         score_audience_fit: score20(s.audience_fit),
@@ -95,7 +95,7 @@ export async function contentStage(ctx: WorkflowContext) {
       task_id: task.id,
       employee_id: creator.id,
       stage: "content",
-      output: output as unknown as Json,
+      output: output,
       summary: output.summary,
       review_status: "passed",
       model: creator.model,

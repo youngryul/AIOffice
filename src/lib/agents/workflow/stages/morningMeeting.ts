@@ -1,5 +1,6 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
+import { toJson } from "@/lib/supabase/json";
 import { ROLE_CATALOG } from "@/lib/agents/roles";
 import { MorningPlanSchema, type MorningPlan } from "@/lib/agents/schemas";
 import { morningMeetingPrompt } from "@/lib/agents/prompts/tasks";
@@ -145,20 +146,20 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     meeting_id: meeting.id,
     company_id: ctx.company.id,
     topic: meeting.topic,
-    participants: ctx.employees.map((e) => e.name) as Json,
+    participants: ctx.employees.map((e) => e.name),
     discussion: plan?.focus_summary ?? "비서실장 부재로 기본 업무를 배정했습니다.",
-    arguments: [] as Json,
+    arguments: [],
     consensus: (plan?.agenda ?? []).join(" / "),
-    disagreements: [] as Json,
+    disagreements: [],
     decision: "오늘 업무 배분 확정",
-    action_items: workers.map((e) => ({ owner: e.name, item: assigned.get(e.id)!.title })) as Json,
+    action_items: workers.map((e) => ({ owner: e.name, item: assigned.get(e.id)!.title })),
     ceo_approval_required: false,
   });
   await ctx.db.from("meetings").update({ status: "completed", ended_at: new Date().toISOString(), rounds: 1 }).eq("id", meeting.id);
 
   await ctx.db
     .from("workday_runs")
-    .update({ plan: (plan ?? { focus_summary: "기본 업무 배분", agenda: [], assignments: [] }) as unknown as Json })
+    .update({ plan: toJson(plan ?? { focus_summary: "기본 업무 배분", agenda: [], assignments: [] }) })
     .eq("id", ctx.run.id);
   await Promise.all(ctx.employees.map((e) => e.setStatus("working")));
   ctx.log(`📋 Morning Meeting: ${rows.length}개 업무 배정${followups.length ? `, CEO 후속 지시 ${followups.length}건 편입` : ""}`);

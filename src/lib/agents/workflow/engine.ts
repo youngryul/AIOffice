@@ -1,6 +1,6 @@
 import "server-only";
 import type { AdminSupabase } from "@/lib/supabase/admin";
-import type { Json } from "@/lib/supabase/database.types";
+import { toJson } from "@/lib/supabase/json";
 import { env } from "@/lib/env";
 import { AiNotConfiguredError, BudgetExceededError, errorMessage } from "@/lib/ai/errors";
 import { dateInTz } from "@/lib/time";
@@ -131,7 +131,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
         error: null,
         status: done ? "completed" : "running",
         completed_at: done ? new Date().toISOString() : null,
-        stage_log: [...log, { stage, status: "completed", at: new Date().toISOString(), logs: ctx.logs }] as unknown as Json,
+        stage_log: toJson([...log, { stage, status: "completed", at: new Date().toISOString(), logs: ctx.logs }]),
       })
       .eq("id", runId)
       .select("*")
@@ -153,10 +153,10 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
         error: message,
         status: failed ? "failed" : "running",
         completed_at: failed ? new Date().toISOString() : null,
-        stage_log: [
+        stage_log: toJson([
           ...log,
           { stage, status: "failed", at: new Date().toISOString(), logs: ctx?.logs ?? [], error: message },
-        ] as unknown as Json,
+        ]),
       })
       .eq("id", runId)
       .select("*")

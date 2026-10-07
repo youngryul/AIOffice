@@ -1,5 +1,5 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { RESEARCH_ROLES } from "@/lib/agents/roles";
 import { WorkOutputSchema, type WorkOutput } from "@/lib/agents/schemas";
 import { researchPrompt } from "@/lib/agents/prompts/tasks";
@@ -66,7 +66,7 @@ async function runResearchTask(ctx: WorkflowContext, task: TaskRow, employee: Ag
       task_id: task.id,
       employee_id: employee.id,
       stage: "research",
-      output: { ...output, retrieved_url_count: result.retrievedUrls.length } as unknown as Json,
+      output: { ...output, retrieved_url_count: result.retrievedUrls.length },
       summary: output.summary,
       confidence: output.confidence,
       model: employee.model,

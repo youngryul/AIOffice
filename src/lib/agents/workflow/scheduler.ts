@@ -2,18 +2,11 @@ import "server-only";
 import type { AdminSupabase } from "@/lib/supabase/admin";
 import { errorMessage } from "@/lib/ai/errors";
 import { dateInTz, minutesOf, timeInTz, zonedParts } from "@/lib/time";
-import { DEFAULT_SCHEDULE, type WorkSchedule, type WorkflowStage } from "@/lib/types/domain";
+import type { WorkSchedule, WorkflowStage } from "@/lib/types/domain";
+import { resolveSchedule } from "@/lib/schedule";
 import { advanceRun, setAllEmployees, startRun, STAGE_SCHEDULE_KEY, RunAlreadyActiveError } from "./engine";
 
-export function resolveSchedule(raw: unknown): WorkSchedule {
-  const s = (raw && typeof raw === "object" ? raw : {}) as Partial<WorkSchedule>;
-  const out = { ...DEFAULT_SCHEDULE };
-  for (const key of Object.keys(DEFAULT_SCHEDULE) as (keyof WorkSchedule)[]) {
-    const v = s[key];
-    if (typeof v === "string" && /^\d{2}:\d{2}$/.test(v)) out[key] = v;
-  }
-  return out;
-}
+export { resolveSchedule };
 
 /** REAL MODE: 지금 이 단계를 실행할 시간이 되었는가 */
 export function isStageDue(stage: WorkflowStage, schedule: WorkSchedule, nowHHMM: string): boolean {

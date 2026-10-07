@@ -1,5 +1,5 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { ReviewOutputSchema, type ReviewOutput } from "@/lib/agents/schemas";
 import { reviewPrompt } from "@/lib/agents/prompts/tasks";
 import { groupDuplicates, slugify } from "@/lib/agents/dedupe";
@@ -280,7 +280,7 @@ export async function teamReviewStage(ctx: WorkflowContext) {
       output: {
         summary: review?.summary ?? "규칙 기반 검토",
         reviews: verdicts.map((v, i) => ({ finding: flat[i].finding.title, pass: v.pass, trend: v.trendName, notes: v.notes })),
-      } as unknown as Json,
+      },
       summary: review?.summary ?? "규칙 기반 검토",
       review_status: "passed",
       model: reviewer.model,

@@ -96,3 +96,8 @@ export function addDays(isoDate: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+/** n일 전 시각 (ISO). 렌더 함수 안에서 Date.now() 를 직접 부르지 않기 위한 헬퍼 */
+export function daysAgoIso(days: number): string {
+  return new Date(Date.now() - days * 86_400_000).toISOString();
+}

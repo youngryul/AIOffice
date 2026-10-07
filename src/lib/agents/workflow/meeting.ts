@@ -1,5 +1,5 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { MeetingMinutesSchema, MeetingTurnSchema, type MeetingMinutesOutput, type MeetingTurn } from "@/lib/agents/schemas";
 import { meetingMinutesPrompt, meetingOpinionPrompt } from "@/lib/agents/prompts/tasks";
 import type { AgentEmployee } from "@/lib/agents/agent";
@@ -129,19 +129,19 @@ export async function runMeeting(
     meeting_id: meeting.id,
     company_id: ctx.company.id,
     topic: params.topic,
-    participants: [params.coordinator.name, ...participants.map((p) => p.agent.name)] as Json,
+    participants: [params.coordinator.name, ...participants.map((p) => p.agent.name)],
     discussion: minutes?.discussion ?? "발언이 수집되지 않았습니다.",
     arguments: (minutes?.arguments ?? []).map((a) => ({
       participant: participants[validIndex(a.participant_index, participants.length) ?? -1]?.agent.name ?? "unknown",
       argument: a.argument,
-    })) as Json,
+    })),
     consensus: minutes?.consensus ?? null,
-    disagreements: (minutes?.disagreements ?? []) as Json,
+    disagreements: (minutes?.disagreements ?? []),
     decision: minutes?.decision ?? null,
     action_items: (minutes?.action_items ?? []).map((a) => ({
       owner: participants[validIndex(a.owner_index, participants.length) ?? -1]?.agent.name ?? params.coordinator.name,
       item: a.item,
-    })) as Json,
+    })),
     ceo_approval_required: minutes?.ceo_approval_required ?? false,
   });
   await ctx.db

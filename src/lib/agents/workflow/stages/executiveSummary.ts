@@ -1,5 +1,6 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
+import { toJson } from "@/lib/supabase/json";
 import { ExecutiveSummarySchema, type AnalysisOutput, type ExecutiveSummaryOutput } from "@/lib/agents/schemas";
 import { executiveSummaryPrompt } from "@/lib/agents/prompts/tasks";
 import { enqueueNotionSync, type NotionEntityType } from "@/lib/tools/notion";
@@ -93,7 +94,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
         reason: a.reason,
         impact: a.impact,
         recommendation: a.recommendation,
-        alternatives: a.alternatives as Json,
+        alternatives: a.alternatives,
         cost: a.cost,
         employee_id: ownerId,
         related_entity_type: relatedType,
@@ -135,13 +136,13 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
         brief_date: ctx.today,
         title: briefTitle.slice(0, 200),
         executive_summary: executiveSummary,
-        ai_trends: aiTrends.map((t) => toItem(t.id, t.name, t.summary, t.current_score)) as unknown as Json,
-        vibe_coding: vibeTrends.map((t) => toItem(t.id, t.name, t.summary, t.current_score)) as unknown as Json,
-        opportunities: topOpps.map((o) => toItem(o.id, o.title, o.problem, o.opportunity_score)) as unknown as Json,
-        content_ideas: topContents.map((c) => toItem(c.id, `[${c.platform}] ${c.title}`, c.hook, c.total_score)) as unknown as Json,
-        things_to_try: thingsToTry as unknown as Json,
-        competitor_movement: competitorMovement as unknown as Json,
-        important_decisions: (summary?.important_decisions ?? (execMinutes?.decision ? [execMinutes.decision] : [])) as Json,
+        ai_trends: toJson(aiTrends.map((t) => toItem(t.id, t.name, t.summary, t.current_score))),
+        vibe_coding: toJson(vibeTrends.map((t) => toItem(t.id, t.name, t.summary, t.current_score))),
+        opportunities: toJson(topOpps.map((o) => toItem(o.id, o.title, o.problem, o.opportunity_score))),
+        content_ideas: toJson(topContents.map((c) => toItem(c.id, `[${c.platform}] ${c.title}`, c.hook, c.total_score))),
+        things_to_try: toJson(thingsToTry),
+        competitor_movement: toJson(competitorMovement),
+        important_decisions: toJson(summary?.important_decisions ?? (execMinutes?.decision ? [execMinutes.decision] : [])),
         approval_ids: approvalIds,
       },
       { onConflict: "company_id,brief_date" },
@@ -156,7 +157,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
       task_id: taskId,
       employee_id: exec?.id ?? null,
       stage: "summary",
-      output: summary as unknown as Json,
+      output: summary,
       summary: summary.executive_summary,
       review_status: "passed",
       model: exec?.model ?? null,

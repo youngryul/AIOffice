@@ -1,5 +1,5 @@
 import "server-only";
-import type { Json, TablesInsert } from "@/lib/supabase/database.types";
+import type { TablesInsert } from "@/lib/supabase/database.types";
 import { AnalysisOutputSchema } from "@/lib/agents/schemas";
 import { analysisPrompt } from "@/lib/agents/prompts/tasks";
 import { score100 } from "@/lib/agents/scoring";
@@ -92,7 +92,7 @@ export async function analysisStage(ctx: WorkflowContext) {
       task_id: task.id,
       employee_id: analyst.id,
       stage: "analysis",
-      output: output as unknown as Json,
+      output: output,
       summary: output.summary,
       confidence: score100(output.confidence),
       review_status: "passed",

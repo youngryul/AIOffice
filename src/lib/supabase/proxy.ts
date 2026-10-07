@@ -11,7 +11,11 @@ export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return response; // 설정 전에는 페이지에서 안내 메시지를 보여준다
+  if (!url || !key || !(process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    // 필수 환경변수가 없으면 에러 대신 설정 안내 페이지를 보여준다
+    if (request.nextUrl.pathname === "/setup" || request.nextUrl.pathname.startsWith("/api/")) return response;
+    return NextResponse.rewrite(new URL("/setup", request.url));
+  }
 
   const supabase = createServerClient(url, key, {
     cookies: {
