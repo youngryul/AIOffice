@@ -14,7 +14,7 @@ const DIFFICULTY = { low: "쉬움", medium: "보통", high: "어려움" } as con
 
 export default async function OpportunitiesPage() {
   const { supabase, companyId } = await requireCompany();
-  const { data: opps } = await supabase.from("opportunities").select("*").eq("company_id", companyId).order("opportunity_score", { ascending: false }).limit(200);
+  const { data: opps } = await supabase.from("aio_opportunities").select("*").eq("company_id", companyId).order("opportunity_score", { ascending: false }).limit(200);
   const options = OPPORTUNITY_STATUSES.map((s) => ({ value: s, label: OPPORTUNITY_STATUS_LABELS[s] }));
 
   return (

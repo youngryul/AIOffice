@@ -28,7 +28,7 @@ const Empty = () => <p className="text-sm text-muted-foreground">없음</p>;
 export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, companyId } = await requireCompany();
-  const { data: p } = await supabase.from("projects").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+  const { data: p } = await supabase.from("aio_projects").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
   if (!p) notFound();
 
   // 키워드와 관련된 트렌드를 Research 섹션에 보여준다
@@ -38,15 +38,15 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
     .join(",");
 
   const [members, employees, tasks, opps, contents, meetings, approvals, trends] = await Promise.all([
-    supabase.from("project_members").select("employee_id").eq("project_id", id).eq("company_id", companyId),
-    supabase.from("employees").select("id, name, avatar, role").eq("company_id", companyId).eq("is_active", true),
-    supabase.from("tasks").select("id, title, status").eq("company_id", companyId).eq("project_id", id).order("created_at", { ascending: false }).limit(20),
-    supabase.from("opportunities").select("id, title, opportunity_score").eq("company_id", companyId).eq("project_id", id),
-    supabase.from("content_ideas").select("id, title, platform, total_score").eq("company_id", companyId).eq("project_id", id),
-    supabase.from("meetings").select("id, topic").eq("company_id", companyId).eq("project_id", id),
-    supabase.from("approvals").select("id, title, status").eq("company_id", companyId).eq("project_id", id),
+    supabase.from("aio_project_members").select("employee_id").eq("project_id", id).eq("company_id", companyId),
+    supabase.from("aio_employees").select("id, name, avatar, role").eq("company_id", companyId).eq("is_active", true),
+    supabase.from("aio_tasks").select("id, title, status").eq("company_id", companyId).eq("project_id", id).order("created_at", { ascending: false }).limit(20),
+    supabase.from("aio_opportunities").select("id, title, opportunity_score").eq("company_id", companyId).eq("project_id", id),
+    supabase.from("aio_content_ideas").select("id, title, platform, total_score").eq("company_id", companyId).eq("project_id", id),
+    supabase.from("aio_meetings").select("id, topic").eq("company_id", companyId).eq("project_id", id),
+    supabase.from("aio_approvals").select("id, title, status").eq("company_id", companyId).eq("project_id", id),
     keywordFilter
-      ? supabase.from("trends").select("id, name, current_score").eq("company_id", companyId).or(keywordFilter).order("current_score", { ascending: false }).limit(10)
+      ? supabase.from("aio_trends").select("id, name, current_score").eq("company_id", companyId).or(keywordFilter).order("current_score", { ascending: false }).limit(10)
       : Promise.resolve({ data: [] as { id: string; name: string; current_score: number }[] }),
   ]);
   const memberIds = new Set((members.data ?? []).map((m) => m.employee_id));

@@ -60,7 +60,7 @@ async function runResearchTask(ctx: WorkflowContext, task: TaskRow, employee: Ag
   const output = sanitizeOutput(result.output, result.retrievedUrls);
 
   const { data: tr, error } = await ctx.db
-    .from("task_results")
+    .from("aio_task_results")
     .insert({
       company_id: ctx.company.id,
       task_id: task.id,
@@ -76,7 +76,7 @@ async function runResearchTask(ctx: WorkflowContext, task: TaskRow, employee: Ag
   if (error || !tr) throw new Error(`조사 결과 저장 실패: ${error?.message}`);
 
   if (output.sources.length) {
-    const rows: TablesInsert<"sources">[] = output.sources.map((s) => ({
+    const rows: TablesInsert<"aio_sources">[] = output.sources.map((s) => ({
       company_id: ctx.company.id,
       task_result_id: tr.id,
       title: s.title.slice(0, 300),
@@ -88,7 +88,7 @@ async function runResearchTask(ctx: WorkflowContext, task: TaskRow, employee: Ag
       is_verified: s.verified,
     }));
     // 같은 URL 은 회사당 1개만 유지 (중복 뉴스 제거 1단계)
-    const { error: srcErr } = await ctx.db.from("sources").upsert(rows, { onConflict: "company_id,normalized_url", ignoreDuplicates: true });
+    const { error: srcErr } = await ctx.db.from("aio_sources").upsert(rows, { onConflict: "company_id,normalized_url", ignoreDuplicates: true });
     if (srcErr) console.error("[research] source upsert failed", srcErr.message);
   }
 
@@ -99,7 +99,7 @@ async function runResearchTask(ctx: WorkflowContext, task: TaskRow, employee: Ag
 
 export async function researchStage(ctx: WorkflowContext) {
   const { data: tasks, error } = await ctx.db
-    .from("tasks")
+    .from("aio_tasks")
     .select("*")
     .eq("company_id", ctx.company.id)
     .eq("run_id", ctx.run.id)

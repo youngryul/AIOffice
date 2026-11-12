@@ -14,8 +14,8 @@ export default async function OpportunityDetailPage({ params }: { params: Promis
   const { id } = await params;
   const { supabase, companyId } = await requireCompany();
   const { data: o } = await supabase
-    .from("opportunities")
-    .select("*, trends(id, name), employees:created_by(name, avatar)")
+    .from("aio_opportunities")
+    .select("*, trends:aio_trends(id, name), employees:created_by(name, avatar)")
     .eq("id", id)
     .eq("company_id", companyId)
     .maybeSingle();

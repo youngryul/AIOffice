@@ -35,8 +35,8 @@ function majorityCategory(findings: Finding[]): TrendCategory {
  */
 export async function teamReviewStage(ctx: WorkflowContext) {
   const { data: results, error } = await ctx.db
-    .from("task_results")
-    .select("id, task_id, employee_id, output, tasks!inner(run_id)")
+    .from("aio_task_results")
+    .select("id, task_id, employee_id, output, tasks:aio_tasks!inner(run_id)")
     .eq("company_id", ctx.company.id)
     .eq("stage", "research")
     .eq("review_status", "pending")
@@ -163,13 +163,13 @@ export async function teamReviewStage(ctx: WorkflowContext) {
 
   const slugs = [...trendGroups.keys()];
   const { data: existing } = slugs.length
-    ? await ctx.db.from("trends").select("*").eq("company_id", ctx.company.id).in("slug", slugs)
+    ? await ctx.db.from("aio_trends").select("*").eq("company_id", ctx.company.id).in("slug", slugs)
     : { data: [] };
   const existingBySlug = new Map((existing ?? []).map((t) => [t.slug, t]));
 
   const allUrls = [...new Set(flat.flatMap((f) => f.finding.source_urls))];
   const { data: sourceRows } = allUrls.length
-    ? await ctx.db.from("sources").select("id, normalized_url").eq("company_id", ctx.company.id).in("normalized_url", allUrls)
+    ? await ctx.db.from("aio_sources").select("id, normalized_url").eq("company_id", ctx.company.id).in("normalized_url", allUrls)
     : { data: [] };
   const sourceIdByUrl = new Map((sourceRows ?? []).map((s) => [s.normalized_url, s.id]));
 
@@ -193,7 +193,7 @@ export async function teamReviewStage(ctx: WorkflowContext) {
     const verified = members.some((i) => flat[i].finding.has_verified_source);
     const tryWorthy = fs.find((f) => f.developer_try_worthy);
 
-    const row: TablesInsert<"trends"> = {
+    const row: TablesInsert<"aio_trends"> = {
       company_id: ctx.company.id,
       run_id: ctx.run.id,
       slug,
@@ -219,7 +219,7 @@ export async function teamReviewStage(ctx: WorkflowContext) {
       last_seen_at: nowIso,
     };
     const { data: saved, error: tErr } = await ctx.db
-      .from("trends")
+      .from("aio_trends")
       .upsert(row, { onConflict: "company_id,slug" })
       .select("id, current_score, growth_score, mention_count")
       .single();
@@ -233,8 +233,8 @@ export async function teamReviewStage(ctx: WorkflowContext) {
       .map((u) => sourceIdByUrl.get(u))
       .filter((id): id is string => Boolean(id))
       .map((source_id) => ({ trend_id: saved.id, source_id, company_id: ctx.company.id }));
-    if (links.length) await ctx.db.from("trend_sources").upsert(links, { onConflict: "trend_id,source_id", ignoreDuplicates: true });
-    await ctx.db.from("trend_snapshots").upsert(
+    if (links.length) await ctx.db.from("aio_trend_sources").upsert(links, { onConflict: "trend_id,source_id", ignoreDuplicates: true });
+    await ctx.db.from("aio_trend_snapshots").upsert(
       {
         company_id: ctx.company.id,
         trend_id: saved.id,
@@ -258,7 +258,7 @@ export async function teamReviewStage(ctx: WorkflowContext) {
   });
   for (const [resultId, e] of byResult) {
     await ctx.db
-      .from("task_results")
+      .from("aio_task_results")
       .update({
         review_status: e.passed > 0 ? "passed" : "rejected",
         reviewer_id: reviewer?.id ?? null,
@@ -272,7 +272,7 @@ export async function teamReviewStage(ctx: WorkflowContext) {
   }
 
   if (reviewTaskId && reviewer) {
-    await ctx.db.from("task_results").insert({
+    await ctx.db.from("aio_task_results").insert({
       company_id: ctx.company.id,
       task_id: reviewTaskId,
       employee_id: reviewer.id,

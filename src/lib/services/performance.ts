@@ -11,19 +11,19 @@ const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.le
 export async function recomputeEmployeePerformance(db: AdminSupabase, companyId: string, employeeId: string, today: string) {
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
   const [{ data: emp }, results, tasks, approvals, trends, opps, contents, prevRating] = await Promise.all([
-    db.from("employees").select("level, role").eq("id", employeeId).eq("company_id", companyId).single(),
-    db.from("task_results").select("stage, review_status, confidence").eq("company_id", companyId).eq("employee_id", employeeId).gte("created_at", since),
-    db.from("tasks").select("status").eq("company_id", companyId).eq("assigned_employee", employeeId).gte("created_at", since),
-    db.from("approvals").select("status").eq("company_id", companyId).eq("employee_id", employeeId).neq("status", "PENDING").gte("created_at", since),
-    db.from("trends").select("current_score, novelty").eq("company_id", companyId).eq("discovered_by", employeeId).gte("last_seen_at", since),
-    db.from("opportunities").select("opportunity_score").eq("company_id", companyId).eq("created_by", employeeId).gte("created_at", since),
+    db.from("aio_employees").select("level, role").eq("id", employeeId).eq("company_id", companyId).single(),
+    db.from("aio_task_results").select("stage, review_status, confidence").eq("company_id", companyId).eq("employee_id", employeeId).gte("created_at", since),
+    db.from("aio_tasks").select("status").eq("company_id", companyId).eq("assigned_employee", employeeId).gte("created_at", since),
+    db.from("aio_approvals").select("status").eq("company_id", companyId).eq("employee_id", employeeId).neq("status", "PENDING").gte("created_at", since),
+    db.from("aio_trends").select("current_score, novelty").eq("company_id", companyId).eq("discovered_by", employeeId).gte("last_seen_at", since),
+    db.from("aio_opportunities").select("opportunity_score").eq("company_id", companyId).eq("created_by", employeeId).gte("created_at", since),
     db
-      .from("content_ideas")
-      .select("total_score, score_originality, content_posts(views, likes, comments, saves, shares)")
+      .from("aio_content_ideas")
+      .select("total_score, score_originality, content_posts:aio_content_posts(views, likes, comments, saves, shares)")
       .eq("company_id", companyId)
       .eq("created_by", employeeId)
       .gte("created_at", since),
-    db.from("employee_performance").select("ceo_rating").eq("employee_id", employeeId).not("ceo_rating", "is", null).order("period_date", { ascending: false }).limit(1).maybeSingle(),
+    db.from("aio_employee_performance").select("ceo_rating").eq("employee_id", employeeId).not("ceo_rating", "is", null).order("period_date", { ascending: false }).limit(1).maybeSingle(),
   ]);
   if (!emp) return;
 
@@ -66,7 +66,7 @@ export async function recomputeEmployeePerformance(db: AdminSupabase, companyId:
   const completedTasks = finished.filter((t) => t.status === "DONE" || t.status === "APPROVED").length;
   const candidate = isPromotionCandidate({ overall, approvalRate, accuracy, completedTasks, level: emp.level });
 
-  await db.from("employee_performance").upsert(
+  await db.from("aio_employee_performance").upsert(
     {
       company_id: companyId,
       employee_id: employeeId,
@@ -83,7 +83,7 @@ export async function recomputeEmployeePerformance(db: AdminSupabase, companyId:
     { onConflict: "employee_id,period_date" },
   );
   await db
-    .from("employees")
+    .from("aio_employees")
     .update({
       accuracy_score: score100(accuracy),
       approval_rate: score100(approvalRate),

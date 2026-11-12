@@ -9,7 +9,7 @@ export async function recentTrends(
 ) {
   const since = new Date(Date.now() - (opts.days ?? 7) * 86_400_000).toISOString();
   let q = db
-    .from("trends")
+    .from("aio_trends")
     .select("id, name, category, summary, current_score, importance, business_score, content_score, developer_score, mention_count, try_worthy, try_reason, last_seen_at")
     .eq("company_id", companyId)
     .gte("last_seen_at", since)

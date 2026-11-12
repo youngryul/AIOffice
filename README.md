@@ -143,6 +143,22 @@ npx supabase db push
 | `20261006000002_rls.sql` | 모든 테이블 RLS, 컬럼 권한(토큰/`company_id` 보호) |
 | `20261006000003_functions.sql` | 비용 집계, Notion 작업 claim(동시성 안전), 예산 조회 함수 |
 
+### DB 객체 명명 규칙 (`aio_` 접두사)
+
+한 Supabase DB 를 여러 프로젝트가 함께 쓸 수 있도록, 이 프로젝트가 만드는 **모든 DB 객체에 `aio_` (AI Office) 접두사**를 붙입니다.
+문서의 다른 곳에서 `tasks`, `profiles.company_id`, `current_company_id()` 처럼 접두사 없이 쓴 이름은 실제로는 `aio_tasks`, `aio_profiles.company_id`, `aio_current_company_id()` 입니다.
+
+| 종류 | 예시 |
+|---|---|
+| 테이블 (29개) | `aio_companies`, `aio_tasks`, `aio_ai_usage` |
+| 함수 | `aio_current_company_id()`, `aio_ai_cost_summary()`, `aio_claim_notion_jobs()` |
+| 인덱스 / 제약조건 / 정책 | `aio_tasks_run_idx`, `aio_employees_current_task_fk`, `aio_tasks_select` |
+| auth 트리거 | `aio_on_auth_user_created` (`auth.users` → `aio_profiles`) |
+
+- 코드에서 embed 할 때는 별칭을 붙여 결과 키를 짧게 유지합니다: `.select("*, employees:aio_employees(name)")` → `row.employees.name`
+- anon 권한 회수는 schema 전체가 아니라 `aio_` 테이블에만 적용됩니다 (다른 프로젝트 테이블 권한을 건드리지 않음).
+- `auth.users` 는 DB 단위로 공유되므로, 다른 프로젝트로 가입한 사용자도 `aio_profiles` 행이 생깁니다 (회사가 없으므로 AI Office 데이터는 보이지 않음).
+
 ### Auth 설정
 
 **Authentication → URL Configuration**

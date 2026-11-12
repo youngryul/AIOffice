@@ -44,7 +44,7 @@ export async function seedDemoData(db: AdminSupabase, companyId: string, today: 
     first_seen_at: now,
     last_seen_at: now,
   }));
-  const { data: trends } = await db.from("trends").insert(trendRows).select("id, name, summary, category, current_score");
+  const { data: trends } = await db.from("aio_trends").insert(trendRows).select("id, name, summary, category, current_score");
 
   // 7일 변화를 보여줄 수 있도록 과거 스냅샷도 만든다
   if (trends?.length) {
@@ -63,11 +63,11 @@ export async function seedDemoData(db: AdminSupabase, companyId: string, today: 
         };
       }),
     );
-    await db.from("trend_snapshots").insert(snapshots);
+    await db.from("aio_trend_snapshots").insert(snapshots);
   }
 
   const { data: opp } = await db
-    .from("opportunities")
+    .from("aio_opportunities")
     .insert({
       company_id: companyId,
       trend_id: trends?.[0]?.id ?? null,
@@ -96,7 +96,7 @@ export async function seedDemoData(db: AdminSupabase, companyId: string, today: 
     { title: "[샘플] 30초 만에 보는 AI Coding Agent 변화", platform: "reels", hook: "30초면 충분합니다" },
   ] as const;
   const { data: contents } = await db
-    .from("content_ideas")
+    .from("aio_content_ideas")
     .insert(
       contentRows.map((c) => ({
         company_id: companyId,
@@ -132,7 +132,7 @@ export async function seedDemoData(db: AdminSupabase, companyId: string, today: 
     .select("id, title, hook, total_score, platform");
 
   const { data: approval } = await db
-    .from("approvals")
+    .from("aio_approvals")
     .insert({
       company_id: companyId,
       title: "[샘플] AI 개발도구 비교 서비스 검증 착수",
@@ -153,7 +153,7 @@ export async function seedDemoData(db: AdminSupabase, companyId: string, today: 
   const item = (id: string, title: string, summary: string | null, score: number): BriefItem => ({ id, title, summary: summary ?? "", score });
   const ai = (trends ?? []).filter((t) => t.category !== "vibe_coding");
   const vibe = (trends ?? []).filter((t) => t.category === "vibe_coding");
-  await db.from("daily_briefs").insert({
+  await db.from("aio_daily_briefs").insert({
     company_id: companyId,
     brief_date: today,
     title: `${today} AI Office Daily Brief (샘플)`,

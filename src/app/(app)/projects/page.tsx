@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "프로젝트" };
 
 export default async function ProjectsPage() {
   const { supabase, companyId } = await requireCompany();
-  const { data: projects } = await supabase.from("projects").select("*").eq("company_id", companyId).order("created_at", { ascending: false });
+  const { data: projects } = await supabase.from("aio_projects").select("*").eq("company_id", companyId).order("created_at", { ascending: false });
 
   return (
     <div className="grid gap-6">

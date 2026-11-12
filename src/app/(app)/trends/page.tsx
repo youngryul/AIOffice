@@ -26,11 +26,11 @@ export default async function TrendsPage({ searchParams }: { searchParams: Promi
   const cat = TREND_CATEGORIES.includes(category as TrendCategory) ? (category as TrendCategory) : null;
   const today = dateInTz(new Date(), settings.timezone);
 
-  let q = supabase.from("trends").select("*").eq("company_id", companyId).neq("status", "archived").order("current_score", { ascending: false }).limit(60);
+  let q = supabase.from("aio_trends").select("*").eq("company_id", companyId).neq("status", "archived").order("current_score", { ascending: false }).limit(60);
   if (cat) q = q.eq("category", cat);
   const [{ data: trends }, { data: snapshots }] = await Promise.all([
     q,
-    supabase.from("trend_snapshots").select("trend_id, snapshot_date, current_score").eq("company_id", companyId).gte("snapshot_date", addDays(today, -31)),
+    supabase.from("aio_trend_snapshots").select("trend_id, snapshot_date, current_score").eq("company_id", companyId).gte("snapshot_date", addDays(today, -31)),
   ]);
 
   // 기준일 이전 가장 최근 스냅샷과 비교해 7일 / 30일 변화 계산

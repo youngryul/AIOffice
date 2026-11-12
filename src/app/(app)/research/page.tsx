@@ -29,13 +29,13 @@ export default async function ResearchPage() {
   const { supabase, companyId } = await requireCompany();
   const [{ data: results }, { data: sources }] = await Promise.all([
     supabase
-      .from("task_results")
-      .select("*, tasks(title), employees:employee_id(name, avatar), reviewer:reviewer_id(name)")
+      .from("aio_task_results")
+      .select("*, tasks:aio_tasks(title), employees:employee_id(name, avatar), reviewer:reviewer_id(name)")
       .eq("company_id", companyId)
       .eq("stage", "research")
       .order("created_at", { ascending: false })
       .limit(20),
-    supabase.from("sources").select("*").eq("company_id", companyId).order("retrieved_at", { ascending: false }).limit(40),
+    supabase.from("aio_sources").select("*").eq("company_id", companyId).order("retrieved_at", { ascending: false }).limit(40),
   ]);
 
   return (

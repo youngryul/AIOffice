@@ -16,7 +16,7 @@ import type { Position, RoleKey, TrendCategory } from "@/lib/types/domain";
 import { POSITION_CONFIG, hasPermission, type Permission } from "./positions";
 import { buildInput, buildInstructions, type ContextSections } from "./prompts/base";
 
-export type EmployeeRow = Tables<"employees">;
+export type EmployeeRow = Tables<"aio_employees">;
 
 /** 직원의 실제 사용 모델: CEO 가 지정한 모델 > 직급 기본 모델 */
 export function modelFor(employee: Pick<EmployeeRow, "model" | "position">): string {
@@ -78,7 +78,7 @@ export class AgentEmployee {
 
   async setStatus(status: EmployeeRow["status"], taskId?: string | null) {
     await this.db
-      .from("employees")
+      .from("aio_employees")
       .update({ status, ...(taskId !== undefined ? { current_task_id: taskId } : {}) })
       .eq("id", this.id)
       .eq("company_id", this.company.id);

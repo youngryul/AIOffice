@@ -18,15 +18,15 @@ export default async function DashboardPage() {
   const dayStart = startOfDayInTz(new Date(), tz).toISOString();
 
   const [{ data: brief }, { data: approvals }, employees, run, cost, todayTasks, trends, opps, contents] = await Promise.all([
-    supabase.from("daily_briefs").select("*").eq("company_id", companyId).order("brief_date", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("approvals").select("id, title, type, recommendation").eq("company_id", companyId).eq("status", "PENDING").order("created_at", { ascending: false }).limit(5),
+    supabase.from("aio_daily_briefs").select("*").eq("company_id", companyId).order("brief_date", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("aio_approvals").select("id, title, type, recommendation").eq("company_id", companyId).eq("status", "PENDING").order("created_at", { ascending: false }).limit(5),
     getOfficeEmployees(supabase, companyId, tz),
     getLatestRun(supabase, companyId),
     getCostSummary(supabase, tz),
-    supabase.from("tasks").select("status").eq("company_id", companyId).gte("created_at", dayStart),
-    supabase.from("trends").select("id", { count: "exact", head: true }).eq("company_id", companyId).neq("status", "archived"),
-    supabase.from("opportunities").select("id", { count: "exact", head: true }).eq("company_id", companyId).neq("status", "ARCHIVED"),
-    supabase.from("content_ideas").select("id", { count: "exact", head: true }).eq("company_id", companyId),
+    supabase.from("aio_tasks").select("status").eq("company_id", companyId).gte("created_at", dayStart),
+    supabase.from("aio_trends").select("id", { count: "exact", head: true }).eq("company_id", companyId).neq("status", "archived"),
+    supabase.from("aio_opportunities").select("id", { count: "exact", head: true }).eq("company_id", companyId).neq("status", "ARCHIVED"),
+    supabase.from("aio_content_ideas").select("id", { count: "exact", head: true }).eq("company_id", companyId),
   ]);
 
   const working = employees.filter((e) => e.status !== "offline" && e.status !== "break").length;

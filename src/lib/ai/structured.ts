@@ -192,7 +192,7 @@ async function logUsage(
     error: string | null;
   },
 ) {
-  const { error } = await db.from("ai_usage").insert({
+  const { error } = await db.from("aio_ai_usage").insert({
     company_id: caller.companyId,
     run_id: caller.runId,
     task_id: caller.taskId,

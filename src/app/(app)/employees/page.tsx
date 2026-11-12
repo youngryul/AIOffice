@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "직원" };
 
 export default async function EmployeesPage() {
   const { supabase, companyId } = await requireCompany();
-  const { data: employees } = await supabase.from("employees").select("*").eq("company_id", companyId).order("level", { ascending: false });
+  const { data: employees } = await supabase.from("aio_employees").select("*").eq("company_id", companyId).order("level", { ascending: false });
   const active = (employees ?? []).filter((e) => e.is_active);
   const former = (employees ?? []).filter((e) => !e.is_active);
 

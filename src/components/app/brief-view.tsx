@@ -5,8 +5,8 @@ import type { BriefItem, CompetitorMovement, ThingToTry } from "@/lib/types/doma
 import { ScorePill } from "@/components/ui/misc";
 import { formatDate } from "@/lib/utils";
 
-type Brief = Tables<"daily_briefs">;
-type Approval = Pick<Tables<"approvals">, "id" | "title" | "type" | "recommendation">;
+type Brief = Tables<"aio_daily_briefs">;
+type Approval = Pick<Tables<"aio_approvals">, "id" | "title" | "type" | "recommendation">;
 
 function Section({ title, emoji, children, href }: { title: string; emoji: string; children: React.ReactNode; href?: string }) {
   return (

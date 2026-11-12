@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
     const db = createAdminClient();
     // OAuth 화면에서 사용자가 템플릿을 복제했다면 그 페이지를 상위 페이지로 사용
     const parent = token.duplicated_template_id ?? null;
-    await db.from("notion_connections").upsert(
+    await db.from("aio_notion_connections").upsert(
       {
         company_id: companyId,
         auth_type: "oauth",
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
       },
       { onConflict: "company_id" },
     );
-    await db.from("notion_databases").delete().eq("company_id", companyId);
+    await db.from("aio_notion_databases").delete().eq("company_id", companyId);
     if (parent) await ensureNotionWorkspace(db, companyId);
     return NextResponse.redirect(new URL("/notion?connected=1", request.url));
   } catch (err) {

@@ -23,7 +23,7 @@ export async function decideApproval(
 ) {
   const { companyId, approvalId, decision, tags, note } = params;
   const { data: approval, error } = await db
-    .from("approvals")
+    .from("aio_approvals")
     .update({ status: decision, feedback_tags: tags, decision_note: note, decided_at: new Date().toISOString() })
     .eq("id", approvalId)
     .eq("company_id", companyId)
@@ -37,23 +37,23 @@ export async function decideApproval(
   const relId = approval.related_entity_id;
   if (approval.related_entity_type === "opportunity" && relId) {
     const status = decision === "APPROVED" ? "RESEARCHING" : decision === "REJECTED" ? "ARCHIVED" : null;
-    if (status) await db.from("opportunities").update({ status }).eq("id", relId).eq("company_id", companyId);
+    if (status) await db.from("aio_opportunities").update({ status }).eq("id", relId).eq("company_id", companyId);
     notionItems.push({ entityType: "opportunity", entityId: relId });
   }
   if (approval.related_entity_type === "content_idea" && relId) {
     const status = decision === "APPROVED" ? "WRITING" : decision === "REJECTED" || decision === "REVISION" ? "IDEA" : null;
-    if (status) await db.from("content_ideas").update({ status }).eq("id", relId).eq("company_id", companyId);
+    if (status) await db.from("aio_content_ideas").update({ status }).eq("id", relId).eq("company_id", companyId);
     notionItems.push({ entityType: "content_idea", entityId: relId });
   }
   if (approval.related_entity_type === "trend" && relId) {
-    if (decision === "APPROVED") await db.from("trends").update({ status: "watching" }).eq("id", relId).eq("company_id", companyId);
+    if (decision === "APPROVED") await db.from("aio_trends").update({ status: "watching" }).eq("id", relId).eq("company_id", companyId);
     notionItems.push({ entityType: "trend", entityId: relId });
   }
 
   if (decision === "MORE_RESEARCH" || decision === "REVISION") {
     // 다음 업무 사이클의 Morning Meeting 에서 자동으로 편입되는 후속 조사 업무
     const { data: researcher } = await db
-      .from("employees")
+      .from("aio_employees")
       .select("id, department")
       .eq("company_id", companyId)
       .eq("is_active", true)
@@ -61,7 +61,7 @@ export async function decideApproval(
       .order("level", { ascending: false })
       .limit(1)
       .maybeSingle();
-    await db.from("tasks").insert({
+    await db.from("aio_tasks").insert({
       company_id: companyId,
       title: `${decision === "MORE_RESEARCH" ? "추가 조사" : "수정 요청 반영"}: ${approval.title}`.slice(0, 200),
       description: `CEO 지시: ${note ?? APPROVAL_STATUS_LABELS[decision]}\n\n원 안건 요약: ${approval.summary ?? ""}`,
@@ -79,14 +79,14 @@ export async function decideApproval(
   // 같은 Run 의 결재가 모두 끝나면 비서실장의 보고 업무를 완료 처리
   if (approval.run_id) {
     const { count } = await db
-      .from("approvals")
+      .from("aio_approvals")
       .select("id", { count: "exact", head: true })
       .eq("company_id", companyId)
       .eq("run_id", approval.run_id)
       .eq("status", "PENDING");
     if ((count ?? 0) === 0) {
       await db
-        .from("tasks")
+        .from("aio_tasks")
         .update({ status: "DONE" })
         .eq("company_id", companyId)
         .eq("run_id", approval.run_id)
@@ -127,7 +127,7 @@ export async function decideApproval(
   await enqueueNotionSync(db, companyId, notionItems);
 
   if (approval.employee_id) {
-    const { data: settings } = await db.from("company_settings").select("timezone").eq("company_id", companyId).single();
+    const { data: settings } = await db.from("aio_company_settings").select("timezone").eq("company_id", companyId).single();
     await recomputeEmployeePerformance(db, companyId, approval.employee_id, dateInTz(new Date(), settings?.timezone ?? "Asia/Seoul"));
   }
   return approval;
@@ -142,8 +142,8 @@ async function summarizeLesson(
   if (!env().OPENAI_API_KEY || (!p.tags.length && !p.note)) return null;
   try {
     const [{ data: cos }, { data: settings }] = await Promise.all([
-      db.from("employees").select("*").eq("company_id", companyId).eq("role", "chief_of_staff").eq("is_active", true).limit(1).maybeSingle(),
-      db.from("company_settings").select("timezone").eq("company_id", companyId).single(),
+      db.from("aio_employees").select("*").eq("company_id", companyId).eq("role", "chief_of_staff").eq("is_active", true).limit(1).maybeSingle(),
+      db.from("aio_company_settings").select("timezone").eq("company_id", companyId).single(),
     ]);
     const { output } = await callStructured({
       db,

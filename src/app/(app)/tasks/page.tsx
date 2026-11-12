@@ -20,7 +20,7 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
   const filter = TASK_STATUSES.includes(status as TaskStatus) ? (status as TaskStatus) : null;
 
   let q = supabase
-    .from("tasks")
+    .from("aio_tasks")
     .select("*, employees:assigned_employee(name, avatar)")
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })
@@ -28,7 +28,7 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
   if (filter) q = q.eq("status", filter);
   const [{ data: tasks }, { data: employees }] = await Promise.all([
     q,
-    supabase.from("employees").select("id, name, avatar, role").eq("company_id", companyId).eq("is_active", true),
+    supabase.from("aio_employees").select("id, name, avatar, role").eq("company_id", companyId).eq("is_active", true),
   ]);
 
   return (

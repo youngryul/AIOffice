@@ -28,9 +28,9 @@ interface ContentBody {
 export default async function ContentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, companyId } = await requireCompany();
-  const { data: c } = await supabase.from("content_ideas").select("*, trends(id, name)").eq("id", id).eq("company_id", companyId).maybeSingle();
+  const { data: c } = await supabase.from("aio_content_ideas").select("*, trends:aio_trends(id, name)").eq("id", id).eq("company_id", companyId).maybeSingle();
   if (!c) notFound();
-  const { data: posts } = await supabase.from("content_posts").select("*").eq("content_idea_id", id).eq("company_id", companyId).order("recorded_at", { ascending: false });
+  const { data: posts } = await supabase.from("aio_content_posts").select("*").eq("content_idea_id", id).eq("company_id", companyId).order("recorded_at", { ascending: false });
   const body = (c.body ?? {}) as ContentBody;
   const trend = c.trends as { id: string; name: string } | null;
 

@@ -20,10 +20,10 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
   const vibeTrends = trends.filter((t) => t.category === "vibe_coding").slice(0, 3);
 
   const [{ data: opps }, { data: contents }, { data: execMinutes }, { data: analysisResults }] = await Promise.all([
-    ctx.db.from("opportunities").select("*").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id).order("opportunity_score", { ascending: false }).limit(3),
-    ctx.db.from("content_ideas").select("*").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id).order("total_score", { ascending: false }).limit(5),
-    ctx.db.from("meeting_minutes").select("decision, consensus, action_items, meetings!inner(run_id, type)").eq("company_id", ctx.company.id).eq("meetings.run_id", ctx.run.id).eq("meetings.type", "executive").limit(1).maybeSingle(),
-    ctx.db.from("task_results").select("output, tasks!inner(run_id)").eq("company_id", ctx.company.id).eq("stage", "analysis").eq("tasks.run_id", ctx.run.id).limit(1),
+    ctx.db.from("aio_opportunities").select("*").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id).order("opportunity_score", { ascending: false }).limit(3),
+    ctx.db.from("aio_content_ideas").select("*").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id).order("total_score", { ascending: false }).limit(5),
+    ctx.db.from("aio_meeting_minutes").select("decision, consensus, action_items, meetings:aio_meetings!inner(run_id, type)").eq("company_id", ctx.company.id).eq("meetings.run_id", ctx.run.id).eq("meetings.type", "executive").limit(1).maybeSingle(),
+    ctx.db.from("aio_task_results").select("output, tasks:aio_tasks!inner(run_id)").eq("company_id", ctx.company.id).eq("stage", "analysis").eq("tasks.run_id", ctx.run.id).limit(1),
   ]);
   const topOpps = opps ?? [];
   const topContents = contents ?? [];
@@ -85,7 +85,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
         const i = validIndex(a.ref_index, topContents.length);
         if (i !== null) [relatedType, relatedId, ownerId] = ["content_idea", topContents[i].id, topContents[i].created_by ?? ownerId];
       }
-      const row: TablesInsert<"approvals"> = {
+      const row: TablesInsert<"aio_approvals"> = {
         company_id: ctx.company.id,
         run_id: ctx.run.id,
         title: a.title.slice(0, 200),
@@ -100,11 +100,11 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
         related_entity_type: relatedType,
         related_entity_id: relatedId,
       };
-      const { data, error } = await ctx.db.from("approvals").insert(row).select("id").single();
+      const { data, error } = await ctx.db.from("aio_approvals").insert(row).select("id").single();
       if (error || !data) continue;
       approvalIds.push(data.id);
       if (relatedType === "content_idea" && relatedId) {
-        await ctx.db.from("content_ideas").update({ status: "CEO_REVIEW" }).eq("id", relatedId).eq("company_id", ctx.company.id);
+        await ctx.db.from("aio_content_ideas").update({ status: "CEO_REVIEW" }).eq("id", relatedId).eq("company_id", ctx.company.id);
       }
     }
   }
@@ -128,7 +128,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
       (aiTrends[0] ? ` 가장 중요한 이슈는 "${aiTrends[0].name}" 입니다.` : "");
 
   const { data: brief, error: briefErr } = await ctx.db
-    .from("daily_briefs")
+    .from("aio_daily_briefs")
     .upsert(
       {
         company_id: ctx.company.id,
@@ -152,7 +152,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
   if (briefErr || !brief) throw new Error(`Daily Brief 저장 실패: ${briefErr?.message}`);
 
   if (taskId && summary) {
-    await ctx.db.from("task_results").insert({
+    await ctx.db.from("aio_task_results").insert({
       company_id: ctx.company.id,
       task_id: taskId,
       employee_id: exec?.id ?? null,
@@ -166,7 +166,7 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
   }
 
   // ---- Notion Sync Queue (AI Workflow 는 Notion 을 직접 호출하지 않는다) ----
-  const { data: meetings } = await ctx.db.from("meetings").select("id").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id);
+  const { data: meetings } = await ctx.db.from("aio_meetings").select("id").eq("company_id", ctx.company.id).eq("run_id", ctx.run.id);
   const queue: { entityType: NotionEntityType; entityId: string }[] = [
     { entityType: "daily_brief", entityId: brief.id },
     ...trends.map((t) => ({ entityType: "trend" as const, entityId: t.id })),

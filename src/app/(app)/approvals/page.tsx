@@ -15,8 +15,8 @@ const RELATED_HREF: Record<string, string> = { opportunity: "/opportunities", co
 export default async function ApprovalsPage() {
   const { supabase, companyId } = await requireCompany();
   const [{ data: pending }, { data: decided }] = await Promise.all([
-    supabase.from("approvals").select("*, employees(name, avatar)").eq("company_id", companyId).eq("status", "PENDING").order("created_at", { ascending: false }),
-    supabase.from("approvals").select("*, employees(name, avatar)").eq("company_id", companyId).neq("status", "PENDING").order("decided_at", { ascending: false }).limit(30),
+    supabase.from("aio_approvals").select("*, employees:aio_employees(name, avatar)").eq("company_id", companyId).eq("status", "PENDING").order("created_at", { ascending: false }),
+    supabase.from("aio_approvals").select("*, employees:aio_employees(name, avatar)").eq("company_id", companyId).neq("status", "PENDING").order("decided_at", { ascending: false }).limit(30),
   ]);
 
   return (

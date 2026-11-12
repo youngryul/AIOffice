@@ -8,7 +8,7 @@ import type { WorkflowContext } from "../context";
 import { ensureTask, failTask, updateTask, validIndex } from "../helpers";
 import { runTrends } from "./analysis";
 
-function priorityFor(total: number): TablesInsert<"content_ideas">["priority"] {
+function priorityFor(total: number): TablesInsert<"aio_content_ideas">["priority"] {
   if (total >= 85) return "urgent";
   if (total >= 70) return "high";
   if (total >= 50) return "medium";
@@ -48,7 +48,7 @@ export async function contentStage(ctx: WorkflowContext) {
       taskPrompt: contentPrompt({ trends: formatTrends(trends, true), brandTopics: ctx.company.brandTopics }),
     });
 
-    const rows: TablesInsert<"content_ideas">[] = output.ideas.map((idea) => {
+    const rows: TablesInsert<"aio_content_ideas">[] = output.ideas.map((idea) => {
       const ti = validIndex(idea.trend_index, trends.length);
       const s = idea.scores;
       const total = contentScore(s);
@@ -86,11 +86,11 @@ export async function contentStage(ctx: WorkflowContext) {
       };
     });
     if (rows.length) {
-      const { error } = await ctx.db.from("content_ideas").insert(rows);
+      const { error } = await ctx.db.from("aio_content_ideas").insert(rows);
       if (error) throw new Error(`콘텐츠 아이디어 저장 실패: ${error.message}`);
     }
 
-    await ctx.db.from("task_results").insert({
+    await ctx.db.from("aio_task_results").insert({
       company_id: ctx.company.id,
       task_id: task.id,
       employee_id: creator.id,

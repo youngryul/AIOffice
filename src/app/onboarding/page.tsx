@@ -10,7 +10,7 @@ export default async function OnboardingPage() {
   const session = await requireUser();
   if (session.profile?.company_id) {
     const { data: company } = await session.supabase
-      .from("companies")
+      .from("aio_companies")
       .select("onboarding_completed")
       .eq("id", session.profile.company_id)
       .maybeSingle();

@@ -9,14 +9,14 @@ export async function GET() {
   const supabase = await createClient();
   const [{ data: run }, { data: employees }] = await Promise.all([
     supabase
-      .from("workday_runs")
+      .from("aio_workday_runs")
       .select("id, stage, status, error, stage_log, started_at, completed_at, mode")
       .eq("company_id", auth.companyId)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
     supabase
-      .from("employees")
+      .from("aio_employees")
       .select("id, status, current_task_id, tasks:current_task_id(title)")
       .eq("company_id", auth.companyId)
       .eq("is_active", true),

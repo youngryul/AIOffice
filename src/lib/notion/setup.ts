@@ -43,11 +43,11 @@ export async function ensureNotionWorkspace(db: AdminSupabase, companyId: string
         ],
       });
       rootId = page.id;
-      await db.from("notion_databases").delete().eq("company_id", companyId); // 새 루트 → DB 도 새로
-      await db.from("notion_connections").update({ root_page_id: rootId }).eq("company_id", companyId);
+      await db.from("aio_notion_databases").delete().eq("company_id", companyId); // 새 루트 → DB 도 새로
+      await db.from("aio_notion_connections").update({ root_page_id: rootId }).eq("company_id", companyId);
     }
 
-    const { data: existing } = await db.from("notion_databases").select("key").eq("company_id", companyId);
+    const { data: existing } = await db.from("aio_notion_databases").select("key").eq("company_id", companyId);
     const have = new Set((existing ?? []).map((d) => d.key));
     for (const key of NOTION_DB_KEYS) {
       if (have.has(key)) continue;
@@ -59,7 +59,7 @@ export async function ensureNotionWorkspace(db: AdminSupabase, companyId: string
         initial_data_source: { properties: def.properties },
       });
       const dataSourceId = await dataSourceIdOf(client, created);
-      await db.from("notion_databases").insert({
+      await db.from("aio_notion_databases").insert({
         company_id: companyId,
         key,
         database_id: created.id,
@@ -67,10 +67,10 @@ export async function ensureNotionWorkspace(db: AdminSupabase, companyId: string
         title: def.title,
       });
     }
-    await db.from("notion_connections").update({ status: "connected", last_error: null }).eq("company_id", companyId);
+    await db.from("aio_notion_connections").update({ status: "connected", last_error: null }).eq("company_id", companyId);
     return { rootPageId: rootId };
   } catch (err) {
-    await db.from("notion_connections").update({ status: "error", last_error: errorMessage(err) }).eq("company_id", companyId);
+    await db.from("aio_notion_connections").update({ status: "error", last_error: errorMessage(err) }).eq("company_id", companyId);
     throw err;
   }
 }

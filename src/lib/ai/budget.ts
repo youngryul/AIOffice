@@ -12,7 +12,7 @@ export async function assertWithinBudget(
 ) {
   const now = new Date();
   if (params.employeeId && params.dailyBudget !== null) {
-    const { data, error } = await db.rpc("employee_spend_since", {
+    const { data, error } = await db.rpc("aio_employee_spend_since", {
       p_employee_id: params.employeeId,
       p_since: startOfDayInTz(now, params.timezone).toISOString(),
     });
@@ -26,13 +26,13 @@ export async function assertWithinBudget(
   }
 
   const { data: settings } = await db
-    .from("company_settings")
+    .from("aio_company_settings")
     .select("monthly_budget_usd")
     .eq("company_id", params.companyId)
     .maybeSingle();
   const monthly = Number(settings?.monthly_budget_usd ?? 0);
   if (monthly > 0) {
-    const { data, error } = await db.rpc("company_spend_since", {
+    const { data, error } = await db.rpc("aio_company_spend_since", {
       p_company_id: params.companyId,
       p_since: startOfMonthInTz(now, params.timezone).toISOString(),
     });

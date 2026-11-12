@@ -11,7 +11,7 @@ export async function getRelevantMemory(
   limit = 25,
 ): Promise<string> {
   let query = db
-    .from("company_memory")
+    .from("aio_company_memory")
     .select("category, content, weight, created_at")
     .eq("company_id", companyId)
     .order("weight", { ascending: false })
@@ -35,7 +35,7 @@ export async function addMemory(
     relatedEntityId?: string;
   },
 ) {
-  const { error } = await db.from("company_memory").insert({
+  const { error } = await db.from("aio_company_memory").insert({
     company_id: params.companyId,
     category: params.category,
     content: params.content.slice(0, 1000),

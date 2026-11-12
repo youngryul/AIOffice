@@ -3,14 +3,14 @@
 -- =====================================================================
 
 -- 비용 요약 (RLS 가 적용되는 security invoker 함수: 자기 회사 데이터만 집계된다)
-create or replace function public.ai_cost_summary(p_tz text default 'Asia/Seoul')
+create or replace function public.aio_ai_cost_summary(p_tz text default 'Asia/Seoul')
 returns jsonb
 language sql stable security invoker set search_path = '' as $$
   with base as (
     select u.*, e.name as employee_name, e.department
-    from public.ai_usage u
-    left join public.employees e on e.id = u.employee_id
-    where u.company_id = public.current_company_id()
+    from public.aio_ai_usage u
+    left join public.aio_employees e on e.id = u.employee_id
+    where u.company_id = public.aio_current_company_id()
       and u.created_at >= (date_trunc('month', now() at time zone p_tz) at time zone p_tz) - interval '7 days'
   ),
   bounds as (
@@ -36,24 +36,24 @@ language sql stable security invoker set search_path = '' as $$
     ), '[]'::jsonb)
   )
 $$;
-grant execute on function public.ai_cost_summary(text) to authenticated;
+grant execute on function public.aio_ai_cost_summary(text) to authenticated;
 
 -- Notion Sync Worker: 처리할 작업을 원자적으로 가져온다 (동시 실행되는 워커끼리 겹치지 않음).
 -- service_role 전용.
-create or replace function public.claim_notion_jobs(p_limit int default 20, p_company_id uuid default null)
-returns setof public.notion_sync_queue
+create or replace function public.aio_claim_notion_jobs(p_limit int default 20, p_company_id uuid default null)
+returns setof public.aio_notion_sync_queue
 language plpgsql security definer set search_path = '' as $$
 begin
   -- 오래 PROCESSING 상태로 멈춘 작업 복구 (워커 crash 대비)
-  update public.notion_sync_queue
+  update public.aio_notion_sync_queue
      set status = 'PENDING'
    where status = 'PROCESSING' and next_attempt_at < now() - interval '10 minutes';
 
   return query
-  update public.notion_sync_queue q
+  update public.aio_notion_sync_queue q
      set status = 'PROCESSING', next_attempt_at = now()
    where q.id in (
-     select id from public.notion_sync_queue
+     select id from public.aio_notion_sync_queue
       where status = 'PENDING' and next_attempt_at <= now()
         and (p_company_id is null or company_id = p_company_id)
       order by created_at
@@ -61,24 +61,24 @@ begin
       for update skip locked)
   returning q.*;
 end $$;
-revoke all on function public.claim_notion_jobs(int, uuid) from public, anon, authenticated;
-grant execute on function public.claim_notion_jobs(int, uuid) to service_role;
+revoke all on function public.aio_claim_notion_jobs(int, uuid) from public, anon, authenticated;
+grant execute on function public.aio_claim_notion_jobs(int, uuid) to service_role;
 
 -- 직원 오늘 사용 비용 (예산 체크용, service_role 전용)
-create or replace function public.employee_spend_since(p_employee_id uuid, p_since timestamptz)
+create or replace function public.aio_employee_spend_since(p_employee_id uuid, p_since timestamptz)
 returns numeric
 language sql stable security definer set search_path = '' as $$
-  select coalesce(sum(estimated_cost), 0) from public.ai_usage
+  select coalesce(sum(estimated_cost), 0) from public.aio_ai_usage
    where employee_id = p_employee_id and created_at >= p_since
 $$;
-revoke all on function public.employee_spend_since(uuid, timestamptz) from public, anon, authenticated;
-grant execute on function public.employee_spend_since(uuid, timestamptz) to service_role;
+revoke all on function public.aio_employee_spend_since(uuid, timestamptz) from public, anon, authenticated;
+grant execute on function public.aio_employee_spend_since(uuid, timestamptz) to service_role;
 
-create or replace function public.company_spend_since(p_company_id uuid, p_since timestamptz)
+create or replace function public.aio_company_spend_since(p_company_id uuid, p_since timestamptz)
 returns numeric
 language sql stable security definer set search_path = '' as $$
-  select coalesce(sum(estimated_cost), 0) from public.ai_usage
+  select coalesce(sum(estimated_cost), 0) from public.aio_ai_usage
    where company_id = p_company_id and created_at >= p_since
 $$;
-revoke all on function public.company_spend_since(uuid, timestamptz) from public, anon, authenticated;
-grant execute on function public.company_spend_since(uuid, timestamptz) to service_role;
+revoke all on function public.aio_company_spend_since(uuid, timestamptz) from public, anon, authenticated;
+grant execute on function public.aio_company_spend_since(uuid, timestamptz) to service_role;

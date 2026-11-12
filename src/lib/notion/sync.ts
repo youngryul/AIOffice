@@ -9,7 +9,7 @@ import { buildNotionPage } from "./mappers";
 /** Notion Sync 최대 재시도 횟수 */
 export const NOTION_MAX_RETRIES = 3;
 
-type Job = Tables<"notion_sync_queue">;
+type Job = Tables<"aio_notion_sync_queue">;
 
 /**
  * Notion Sync Worker.
@@ -17,7 +17,7 @@ type Job = Tables<"notion_sync_queue">;
  * 실패하면 지수 backoff 로 최대 3회 재시도 후 FAILED.
  */
 export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: string; limit?: number } = {}) {
-  const { data: jobs, error } = await db.rpc("claim_notion_jobs", {
+  const { data: jobs, error } = await db.rpc("aio_claim_notion_jobs", {
     p_limit: opts.limit ?? 20,
     p_company_id: opts.companyId,
   });
@@ -36,7 +36,7 @@ export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: 
     } catch (err) {
       setupError = errorMessage(err);
     }
-    const { data: dbs } = await db.from("notion_databases").select("key, data_source_id").eq("company_id", companyId);
+    const { data: dbs } = await db.from("aio_notion_databases").select("key, data_source_id").eq("company_id", companyId);
     const dataSources = new Map((dbs ?? []).map((d) => [d.key, d.data_source_id]));
 
     for (const job of companyJobs) {
@@ -53,7 +53,7 @@ export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: 
         if (!dataSourceId) throw new Error(`Notion Database(${payload.dbKey})가 아직 생성되지 않았습니다. Notion 페이지에서 '워크스페이스 설정'을 실행하세요.`);
 
         const { data: mapping } = await db
-          .from("notion_pages")
+          .from("aio_notion_pages")
           .select("page_id")
           .eq("entity_type", job.entity_type)
           .eq("entity_id", job.entity_id)
@@ -70,7 +70,7 @@ export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: 
             children: payload.children.slice(0, 100),
           });
           pageId = page.id;
-          await db.from("notion_pages").upsert({
+          await db.from("aio_notion_pages").upsert({
             company_id: companyId,
             entity_type: job.entity_type,
             entity_id: job.entity_id,
@@ -86,7 +86,7 @@ export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: 
           stats.failed++;
         } else {
           await db
-            .from("notion_sync_queue")
+            .from("aio_notion_sync_queue")
             .update({
               status: "PENDING",
               retry_count: retry,
@@ -104,7 +104,7 @@ export async function processNotionQueue(db: AdminSupabase, opts: { companyId?: 
 
 async function finish(db: AdminSupabase, job: Job, status: "DONE" | "FAILED", pageId: string | null, error: string | null, retry?: number) {
   await db
-    .from("notion_sync_queue")
+    .from("aio_notion_sync_queue")
     .update({
       status,
       notion_page_id: pageId,

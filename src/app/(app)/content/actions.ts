@@ -26,7 +26,7 @@ export async function setContentStatus(contentId: string, formData: FormData) {
   const status = z.enum(CONTENT_STATUSES).safeParse(formData.get("status"));
   if (!status.success) return;
   await supabase
-    .from("content_ideas")
+    .from("aio_content_ideas")
     .update({ status: status.data, ...(status.data === "PUBLISHED" ? { published_at: new Date().toISOString() } : {}) })
     .eq("id", contentId)
     .eq("company_id", companyId);
@@ -39,7 +39,7 @@ export async function scheduleContent(contentId: string, _prev: ContentActionSta
   const date = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().safeParse(formData.get("date") || null);
   if (!date.success) return { error: "날짜 형식이 올바르지 않습니다." };
   await supabase
-    .from("content_ideas")
+    .from("aio_content_ideas")
     .update({ scheduled_for: date.data, ...(date.data ? { status: "SCHEDULED" as const } : {}) })
     .eq("id", contentId)
     .eq("company_id", companyId);
@@ -63,11 +63,11 @@ export async function recordPerformance(contentId: string, _prev: ContentActionS
   const { supabase, companyId, settings } = await requireCompany();
   const parsed = Metrics.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "입력값 오류" };
-  const { data: idea } = await supabase.from("content_ideas").select("title, platform, created_by").eq("id", contentId).eq("company_id", companyId).single();
+  const { data: idea } = await supabase.from("aio_content_ideas").select("title, platform, created_by").eq("id", contentId).eq("company_id", companyId).single();
   if (!idea) return { error: "콘텐츠를 찾을 수 없습니다." };
 
   const m = parsed.data;
-  const { error } = await supabase.from("content_posts").insert({
+  const { error } = await supabase.from("aio_content_posts").insert({
     company_id: companyId,
     content_idea_id: contentId,
     platform: idea.platform,
@@ -81,7 +81,7 @@ export async function recordPerformance(contentId: string, _prev: ContentActionS
     followers_gained: m.followers_gained,
   });
   if (error) return { error: error.message };
-  await supabase.from("content_ideas").update({ status: "PUBLISHED", published_at: new Date().toISOString() }).eq("id", contentId).eq("company_id", companyId);
+  await supabase.from("aio_content_ideas").update({ status: "PUBLISHED", published_at: new Date().toISOString() }).eq("id", contentId).eq("company_id", companyId);
 
   const admin = createAdminClient();
   const engagement = m.views > 0 ? (m.likes + m.comments + m.saves + m.shares) / m.views : 0;

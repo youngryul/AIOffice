@@ -20,7 +20,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
   const { id } = await searchParams;
   const { supabase, companyId } = await requireCompany();
   const { data: meetings } = await supabase
-    .from("meetings")
+    .from("aio_meetings")
     .select("id, type, topic, status, rounds, started_at")
     .eq("company_id", companyId)
     .order("started_at", { ascending: false })
@@ -29,8 +29,8 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
 
   const [{ data: minutes }, { data: messages }] = selectedId
     ? await Promise.all([
-        supabase.from("meeting_minutes").select("*").eq("meeting_id", selectedId).eq("company_id", companyId).maybeSingle(),
-        supabase.from("meeting_messages").select("*, employees(name, avatar)").eq("meeting_id", selectedId).eq("company_id", companyId).order("round").order("created_at"),
+        supabase.from("aio_meeting_minutes").select("*").eq("meeting_id", selectedId).eq("company_id", companyId).maybeSingle(),
+        supabase.from("aio_meeting_messages").select("*, employees:aio_employees(name, avatar)").eq("meeting_id", selectedId).eq("company_id", companyId).order("round").order("created_at"),
       ])
     : [{ data: null }, { data: null }];
   const selected = meetings?.find((m) => m.id === selectedId);

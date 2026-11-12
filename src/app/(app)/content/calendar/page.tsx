@@ -30,13 +30,13 @@ export default async function ContentCalendarPage({ searchParams }: { searchPara
   const next = new Date(Date.UTC(year, mon, 1)).toISOString().slice(0, 7);
 
   const { data: items } = await supabase
-    .from("content_ideas")
+    .from("aio_content_ideas")
     .select("id, title, platform, status, scheduled_for")
     .eq("company_id", companyId)
     .gte("scheduled_for", `${ym}-01`)
     .lte("scheduled_for", `${ym}-${String(daysInMonth).padStart(2, "0")}`);
   const { data: unscheduled } = await supabase
-    .from("content_ideas")
+    .from("aio_content_ideas")
     .select("id, title, platform, total_score")
     .eq("company_id", companyId)
     .is("scheduled_for", null)

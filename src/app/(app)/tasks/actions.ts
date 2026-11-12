@@ -32,11 +32,11 @@ export async function createTask(_prev: TaskActionState, formData: FormData): Pr
 
   let department = "research";
   if (d.assigned_employee) {
-    const { data: emp } = await supabase.from("employees").select("department").eq("id", d.assigned_employee).eq("company_id", companyId).maybeSingle();
+    const { data: emp } = await supabase.from("aio_employees").select("department").eq("id", d.assigned_employee).eq("company_id", companyId).maybeSingle();
     if (!emp) return { error: "직원을 찾을 수 없습니다." };
     department = emp.department;
   }
-  const { error } = await supabase.from("tasks").insert({
+  const { error } = await supabase.from("aio_tasks").insert({
     company_id: companyId,
     title: d.title,
     description: d.description ?? null,
@@ -57,6 +57,6 @@ export async function createTask(_prev: TaskActionState, formData: FormData): Pr
 
 export async function deleteTask(taskId: string) {
   const { supabase, companyId } = await requireCompany();
-  await supabase.from("tasks").delete().eq("id", taskId).eq("company_id", companyId).is("run_id", null);
+  await supabase.from("aio_tasks").delete().eq("id", taskId).eq("company_id", companyId).is("run_id", null);
   revalidatePath("/tasks");
 }

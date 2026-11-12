@@ -30,13 +30,13 @@ export async function runSchedulerTick(db: AdminSupabase, maxAdvances = 3): Prom
   const now = new Date();
 
   const { data: companies } = await db
-    .from("company_settings")
+    .from("aio_company_settings")
     .select("company_id, timezone, work_mode, schedule, workdays, ai_enabled");
 
   for (const c of companies ?? []) {
     if (advances >= maxAdvances) break;
     try {
-      const { data: running } = await db.from("workday_runs").select("*").eq("company_id", c.company_id).eq("status", "running").maybeSingle();
+      const { data: running } = await db.from("aio_workday_runs").select("*").eq("company_id", c.company_id).eq("status", "running").maybeSingle();
 
       if (c.work_mode === "FAST") {
         // 멈춘 FAST Run 재개 (1분 이상 아무도 진행하지 않은 경우)
@@ -74,7 +74,7 @@ export async function runSchedulerTick(db: AdminSupabase, maxAdvances = 3): Prom
 
       const today = dateInTz(now, c.timezone);
       const { count } = await db
-        .from("workday_runs")
+        .from("aio_workday_runs")
         .select("id", { count: "exact", head: true })
         .eq("company_id", c.company_id)
         .eq("run_date", today)

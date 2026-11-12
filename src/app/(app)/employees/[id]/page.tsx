@@ -22,15 +22,15 @@ export const metadata: Metadata = { title: "직원 상세" };
 export default async function EmployeeDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, companyId, settings } = await requireCompany();
-  const { data: e } = await supabase.from("employees").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+  const { data: e } = await supabase.from("aio_employees").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
   if (!e) notFound();
 
   const dayStart = startOfDayInTz(new Date(), settings.timezone).toISOString();
   const [{ data: tasks }, { data: perf }, { data: usageToday }, { data: usageMonth }] = await Promise.all([
-    supabase.from("tasks").select("id, title, status, updated_at, last_error").eq("company_id", companyId).eq("assigned_employee", id).order("updated_at", { ascending: false }).limit(15),
-    supabase.from("employee_performance").select("*").eq("company_id", companyId).eq("employee_id", id).order("period_date", { ascending: false }).limit(1).maybeSingle(),
-    supabase.from("ai_usage").select("input_tokens, output_tokens, estimated_cost").eq("company_id", companyId).eq("employee_id", id).gte("created_at", dayStart),
-    supabase.from("ai_usage").select("estimated_cost").eq("company_id", companyId).eq("employee_id", id).gte("created_at", daysAgoIso(30)),
+    supabase.from("aio_tasks").select("id, title, status, updated_at, last_error").eq("company_id", companyId).eq("assigned_employee", id).order("updated_at", { ascending: false }).limit(15),
+    supabase.from("aio_employee_performance").select("*").eq("company_id", companyId).eq("employee_id", id).order("period_date", { ascending: false }).limit(1).maybeSingle(),
+    supabase.from("aio_ai_usage").select("input_tokens, output_tokens, estimated_cost").eq("company_id", companyId).eq("employee_id", id).gte("created_at", dayStart),
+    supabase.from("aio_ai_usage").select("estimated_cost").eq("company_id", companyId).eq("employee_id", id).gte("created_at", daysAgoIso(30)),
   ]);
 
   const role = ROLE_CATALOG[e.role as RoleKey];

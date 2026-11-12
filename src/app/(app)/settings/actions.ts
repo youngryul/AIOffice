@@ -31,7 +31,7 @@ export async function updateCompany(_prev: SettingsState, formData: FormData): P
   const parsed = CompanySchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
   const { error } = await supabase
-    .from("companies")
+    .from("aio_companies")
     .update({
       name: parsed.data.name,
       mission: parsed.data.mission || null,
@@ -72,7 +72,7 @@ export async function updateWorkSettings(_prev: SettingsState, formData: FormDat
   const workdays = formData.getAll("workdays").map(Number).filter((d) => d >= 0 && d <= 6);
 
   const { error } = await supabase
-    .from("company_settings")
+    .from("aio_company_settings")
     .update({
       ...parsed.data,
       schedule: toJson(schedule),
@@ -91,7 +91,7 @@ export async function addMemoryItem(_prev: SettingsState, formData: FormData): P
     .object({ category: z.enum(MEMORY_CATEGORIES), content: z.string().trim().min(2).max(1000) })
     .safeParse(Object.fromEntries(formData));
   if (!parsed.success) return { error: "내용을 입력하세요." };
-  const { error } = await supabase.from("company_memory").insert({ company_id: companyId, ...parsed.data, source: "ceo", weight: 3 });
+  const { error } = await supabase.from("aio_company_memory").insert({ company_id: companyId, ...parsed.data, source: "ceo", weight: 3 });
   if (error) return { error: error.message };
   revalidatePath("/settings");
   return { ok: true };
@@ -99,6 +99,6 @@ export async function addMemoryItem(_prev: SettingsState, formData: FormData): P
 
 export async function deleteMemoryItem(id: string) {
   const { supabase, companyId } = await requireCompany();
-  await supabase.from("company_memory").delete().eq("id", id).eq("company_id", companyId);
+  await supabase.from("aio_company_memory").delete().eq("id", id).eq("company_id", companyId);
   revalidatePath("/settings");
 }

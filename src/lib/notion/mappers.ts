@@ -44,7 +44,7 @@ const asList = (items: BriefItem[]) => items.map((i, n) => `${n + 1}. ${i.title}
 export async function buildNotionPage(db: AdminSupabase, companyId: string, type: NotionEntityType, id: string): Promise<NotionPagePayload | null> {
   switch (type) {
     case "daily_brief": {
-      const { data: b } = await db.from("daily_briefs").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: b } = await db.from("aio_daily_briefs").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!b) return null;
       const ai = b.ai_trends as unknown as BriefItem[];
       const vibe = b.vibe_coding as unknown as BriefItem[];
@@ -83,9 +83,9 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "trend": {
-      const { data: t } = await db.from("trends").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: t } = await db.from("aio_trends").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!t) return null;
-      const { data: links } = await db.from("trend_sources").select("sources(title, url, publisher)").eq("trend_id", id).limit(10);
+      const { data: links } = await db.from("aio_trend_sources").select("sources:aio_sources(title, url, publisher)").eq("trend_id", id).limit(10);
       const sources = (links ?? []).map((l) => l.sources as { title: string; url: string; publisher: string | null } | null).filter((s) => s !== null);
       return {
         dbKey: t.category === "vibe_coding" ? "vibe_coding" : "ai_trends",
@@ -111,7 +111,7 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "opportunity": {
-      const { data: o } = await db.from("opportunities").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: o } = await db.from("aio_opportunities").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!o) return null;
       return {
         dbKey: "opportunities",
@@ -137,7 +137,7 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "content_idea": {
-      const { data: c } = await db.from("content_ideas").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: c } = await db.from("aio_content_ideas").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!c) return null;
       const body = (c.body ?? {}) as { caption?: string | null; slides?: string[]; reels_script?: string | null; outline?: string[]; hashtags?: string[] };
       return {
@@ -163,7 +163,7 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "meeting": {
-      const { data: m } = await db.from("meetings").select("*, meeting_minutes(*)").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: m } = await db.from("aio_meetings").select("*, meeting_minutes:aio_meeting_minutes(*)").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!m) return null;
       const minutes = Array.isArray(m.meeting_minutes) ? m.meeting_minutes[0] : m.meeting_minutes;
       const actionItems = ((minutes?.action_items ?? []) as { owner: string; item: string }[]).map((a) => `${a.owner}: ${a.item}`);
@@ -189,7 +189,7 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "approval": {
-      const { data: a } = await db.from("approvals").select("*, employees(name)").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: a } = await db.from("aio_approvals").select("*, employees:aio_employees(name)").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!a) return null;
       const owner = (a.employees as { name: string } | null)?.name ?? "";
       return {
@@ -213,7 +213,7 @@ export async function buildNotionPage(db: AdminSupabase, companyId: string, type
       };
     }
     case "project": {
-      const { data: p } = await db.from("projects").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
+      const { data: p } = await db.from("aio_projects").select("*").eq("id", id).eq("company_id", companyId).maybeSingle();
       if (!p) return null;
       return {
         dbKey: "projects",

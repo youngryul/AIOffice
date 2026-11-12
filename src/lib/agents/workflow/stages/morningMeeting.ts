@@ -46,7 +46,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     activeProjects(ctx.db, ctx.company.id),
     // CEO 가 지시한 추가 조사(아직 Run 에 배정되지 않은 Task)를 오늘 Run 에 편입
     ctx.db
-      .from("tasks")
+      .from("aio_tasks")
       .select("*")
       .eq("company_id", ctx.company.id)
       .is("run_id", null)
@@ -57,7 +57,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
   const followups = followupsRes.data ?? [];
   if (followups.length) {
     await ctx.db
-      .from("tasks")
+      .from("aio_tasks")
       .update({ run_id: ctx.run.id })
       .in("id", followups.map((t) => t.id))
       .eq("company_id", ctx.company.id);
@@ -84,7 +84,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
   }
 
   // 계획 검증: 잘못된 index 는 버리고, 업무가 없는 직원에게는 기본 업무를 준다.
-  const assigned = new Map<string, { title: string; description: string; priority: TablesInsert<"tasks">["priority"]; keywords: string[] }>();
+  const assigned = new Map<string, { title: string; description: string; priority: TablesInsert<"aio_tasks">["priority"]; keywords: string[] }>();
   for (const a of plan?.assignments ?? []) {
     const idx = validIndex(a.employee_index, workers.length);
     if (idx === null) continue;
@@ -100,7 +100,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     }
   }
 
-  const rows: TablesInsert<"tasks">[] = workers.map((e) => {
+  const rows: TablesInsert<"aio_tasks">[] = workers.map((e) => {
     const a = assigned.get(e.id)!;
     return {
       company_id: ctx.company.id,
@@ -116,7 +116,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
       source: "morning_meeting",
     };
   });
-  const { error: taskErr } = await ctx.db.from("tasks").insert(rows);
+  const { error: taskErr } = await ctx.db.from("aio_tasks").insert(rows);
   if (taskErr) throw new Error(`오늘 업무 생성 실패: ${taskErr.message}`);
 
   // 회의 기록 (Morning Meeting)
@@ -126,7 +126,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     coordinatorId: cos?.id ?? null,
     participantIds: ctx.employees.map((e) => e.id),
   });
-  const messages: TablesInsert<"meeting_messages">[] = [];
+  const messages: TablesInsert<"aio_meeting_messages">[] = [];
   if (plan) {
     messages.push({ meeting_id: meeting.id, company_id: ctx.company.id, employee_id: cos?.id ?? null, round: 1, stance: "opinion", content: plan.focus_summary });
   }
@@ -141,8 +141,8 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
       content: `${e.name}: ${a.title}${a.keywords.length ? ` (키워드: ${a.keywords.join(", ")})` : ""}`,
     });
   }
-  if (messages.length) await ctx.db.from("meeting_messages").insert(messages);
-  await ctx.db.from("meeting_minutes").insert({
+  if (messages.length) await ctx.db.from("aio_meeting_messages").insert(messages);
+  await ctx.db.from("aio_meeting_minutes").insert({
     meeting_id: meeting.id,
     company_id: ctx.company.id,
     topic: meeting.topic,
@@ -155,10 +155,10 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     action_items: workers.map((e) => ({ owner: e.name, item: assigned.get(e.id)!.title })),
     ceo_approval_required: false,
   });
-  await ctx.db.from("meetings").update({ status: "completed", ended_at: new Date().toISOString(), rounds: 1 }).eq("id", meeting.id);
+  await ctx.db.from("aio_meetings").update({ status: "completed", ended_at: new Date().toISOString(), rounds: 1 }).eq("id", meeting.id);
 
   await ctx.db
-    .from("workday_runs")
+    .from("aio_workday_runs")
     .update({ plan: toJson(plan ?? { focus_summary: "기본 업무 배분", agenda: [], assignments: [] }) })
     .eq("id", ctx.run.id);
   await Promise.all(ctx.employees.map((e) => e.setStatus("working")));

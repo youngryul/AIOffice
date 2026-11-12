@@ -28,7 +28,7 @@ export async function hireEmployee(_prev: ActionState, formData: FormData): Prom
     .safeParse({ role: formData.get("role"), name: formData.get("name") || undefined, position: formData.get("position") || undefined });
   if (!parsed.success) return { error: "역할을 선택하세요." };
 
-  const { error } = await supabase.from("employees").insert(buildEmployeeRow({ companyId, userId, ...parsed.data }));
+  const { error } = await supabase.from("aio_employees").insert(buildEmployeeRow({ companyId, userId, ...parsed.data }));
   if (error) return { error: error.message };
   revalidatePath("/", "layout");
   return { ok: true };
@@ -37,7 +37,7 @@ export async function hireEmployee(_prev: ActionState, formData: FormData): Prom
 export async function fireEmployee(employeeId: string) {
   const { supabase, companyId } = await requireCompany();
   await supabase
-    .from("employees")
+    .from("aio_employees")
     .update({ is_active: false, fired_at: new Date().toISOString(), status: "offline" })
     .eq("id", employeeId)
     .eq("company_id", companyId);
@@ -47,7 +47,7 @@ export async function fireEmployee(employeeId: string) {
 
 export async function rehireEmployee(employeeId: string) {
   const { supabase, companyId } = await requireCompany();
-  await supabase.from("employees").update({ is_active: true, fired_at: null }).eq("id", employeeId).eq("company_id", companyId);
+  await supabase.from("aio_employees").update({ is_active: true, fired_at: null }).eq("id", employeeId).eq("company_id", companyId);
   revalidatePath("/", "layout");
 }
 
@@ -66,7 +66,7 @@ export async function updateEmployeeSettings(employeeId: string, _prev: ActionSt
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "입력값 오류" };
   const d = parsed.data;
   const { error } = await supabase
-    .from("employees")
+    .from("aio_employees")
     .update({
       name: d.name,
       model: d.model || null,
@@ -89,7 +89,7 @@ export async function rateEmployee(employeeId: string, rating: number, notes: st
   const { supabase, companyId, settings } = await requireCompany();
   const r = Math.min(5, Math.max(1, Math.round(rating)));
   const today = dateInTz(new Date(), settings.timezone);
-  await supabase.from("employee_performance").upsert(
+  await supabase.from("aio_employee_performance").upsert(
     { company_id: companyId, employee_id: employeeId, period_date: today, ceo_rating: r, notes: notes.slice(0, 1000) || null },
     { onConflict: "employee_id,period_date" },
   );
@@ -99,13 +99,13 @@ export async function rateEmployee(employeeId: string, rating: number, notes: st
 /** 승진: Level / 기본 AI 모델 / Token Budget / 권한(Authority) 이 함께 바뀐다 */
 export async function promoteEmployee(employeeId: string) {
   const { supabase, companyId } = await requireCompany();
-  const { data: emp } = await supabase.from("employees").select("position, name").eq("id", employeeId).eq("company_id", companyId).single();
+  const { data: emp } = await supabase.from("aio_employees").select("position, name").eq("id", employeeId).eq("company_id", companyId).single();
   if (!emp) return;
   const next = nextPosition(emp.position as Position);
   if (!next) return;
   const cfg = POSITION_CONFIG[next];
   await supabase
-    .from("employees")
+    .from("aio_employees")
     .update({
       position: next,
       level: cfg.level,
@@ -116,7 +116,7 @@ export async function promoteEmployee(employeeId: string) {
     })
     .eq("id", employeeId)
     .eq("company_id", companyId);
-  await supabase.from("company_memory").insert({
+  await supabase.from("aio_company_memory").insert({
     company_id: companyId,
     category: "past_decisions",
     content: `${emp.name} 을(를) ${cfg.label} 로 승진시킴`,

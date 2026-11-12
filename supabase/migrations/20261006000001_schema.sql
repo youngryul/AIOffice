@@ -8,7 +8,7 @@ create extension if not exists pgcrypto;
 -- ---------------------------------------------------------------------
 -- Companies / Profiles
 -- ---------------------------------------------------------------------
-create table public.companies (
+create table public.aio_companies (
   id                    uuid primary key default gen_random_uuid(),
   owner_id              uuid not null references auth.users(id) on delete cascade,
   name                  text not null check (char_length(name) between 1 and 100),
@@ -23,20 +23,20 @@ create table public.companies (
   created_at            timestamptz not null default now(),
   updated_at            timestamptz not null default now()
 );
-create index companies_owner_idx on public.companies(owner_id);
+create index aio_companies_owner_idx on public.aio_companies(owner_id);
 
-create table public.profiles (
+create table public.aio_profiles (
   id            uuid primary key references auth.users(id) on delete cascade,
-  company_id    uuid references public.companies(id) on delete set null,
+  company_id    uuid references public.aio_companies(id) on delete set null,
   email         text,
   display_name  text,
   role          text not null default 'ceo' check (role in ('ceo')),
   created_at    timestamptz not null default now()
 );
-create index profiles_company_idx on public.profiles(company_id);
+create index aio_profiles_company_idx on public.aio_profiles(company_id);
 
-create table public.company_settings (
-  company_id          uuid primary key references public.companies(id) on delete cascade,
+create table public.aio_company_settings (
+  company_id          uuid primary key references public.aio_companies(id) on delete cascade,
   timezone            text not null default 'Asia/Seoul',
   work_mode           text not null default 'FAST' check (work_mode in ('REAL', 'FAST')),
   -- {"start":"09:00","morning_meeting":"09:10","research":"09:30","team_review":"11:00",
@@ -52,9 +52,9 @@ create table public.company_settings (
 -- ---------------------------------------------------------------------
 -- Employees
 -- ---------------------------------------------------------------------
-create table public.employees (
+create table public.aio_employees (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
   user_id              uuid not null references auth.users(id) on delete cascade,
   name                 text not null,
   avatar               text not null default '🤖',
@@ -83,14 +83,14 @@ create table public.employees (
   fired_at             timestamptz,
   created_at           timestamptz not null default now()
 );
-create index employees_company_idx on public.employees(company_id, is_active);
+create index aio_employees_company_idx on public.aio_employees(company_id, is_active);
 
 -- ---------------------------------------------------------------------
 -- Projects
 -- ---------------------------------------------------------------------
-create table public.projects (
+create table public.aio_projects (
   id                 uuid primary key default gen_random_uuid(),
-  company_id         uuid not null references public.companies(id) on delete cascade,
+  company_id         uuid not null references public.aio_companies(id) on delete cascade,
   name               text not null,
   goal               text,
   description        text,
@@ -100,12 +100,12 @@ create table public.projects (
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
-create index projects_company_idx on public.projects(company_id);
+create index aio_projects_company_idx on public.aio_projects(company_id);
 
-create table public.project_members (
-  project_id   uuid not null references public.projects(id) on delete cascade,
-  employee_id  uuid not null references public.employees(id) on delete cascade,
-  company_id   uuid not null references public.companies(id) on delete cascade,
+create table public.aio_project_members (
+  project_id   uuid not null references public.aio_projects(id) on delete cascade,
+  employee_id  uuid not null references public.aio_employees(id) on delete cascade,
+  company_id   uuid not null references public.aio_companies(id) on delete cascade,
   role         text,
   primary key (project_id, employee_id)
 );
@@ -113,9 +113,9 @@ create table public.project_members (
 -- ---------------------------------------------------------------------
 -- Workday runs (workflow state machine)
 -- ---------------------------------------------------------------------
-create table public.workday_runs (
+create table public.aio_workday_runs (
   id            uuid primary key default gen_random_uuid(),
-  company_id    uuid not null references public.companies(id) on delete cascade,
+  company_id    uuid not null references public.aio_companies(id) on delete cascade,
   run_date      date not null,
   mode          text not null check (mode in ('REAL', 'FAST')),
   stage         text not null default 'morning_meeting' check (stage in (
@@ -131,28 +131,28 @@ create table public.workday_runs (
   completed_at  timestamptz,
   created_at    timestamptz not null default now()
 );
-create index workday_runs_company_idx on public.workday_runs(company_id, created_at desc);
-create unique index workday_runs_one_running on public.workday_runs(company_id) where status = 'running';
+create index aio_workday_runs_company_idx on public.aio_workday_runs(company_id, created_at desc);
+create unique index aio_workday_runs_one_running on public.aio_workday_runs(company_id) where status = 'running';
 
 -- ---------------------------------------------------------------------
 -- Tasks / Results / Sources
 -- ---------------------------------------------------------------------
-create table public.tasks (
+create table public.aio_tasks (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
-  run_id               uuid references public.workday_runs(id) on delete set null,
-  project_id           uuid references public.projects(id) on delete set null,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
+  run_id               uuid references public.aio_workday_runs(id) on delete set null,
+  project_id           uuid references public.aio_projects(id) on delete set null,
   title                text not null,
   description          text,
   department           text,
   task_type            text not null default 'research' check (task_type in ('research', 'review', 'analysis', 'content', 'meeting', 'summary', 'custom')),
-  assigned_employee    uuid references public.employees(id) on delete set null,
+  assigned_employee    uuid references public.aio_employees(id) on delete set null,
   priority             text not null default 'medium' check (priority in ('low', 'medium', 'high', 'urgent')),
   status               text not null default 'TODO' check (status in (
                          'TODO', 'WORKING', 'REVIEW', 'MEETING', 'APPROVAL', 'APPROVED', 'REJECTED', 'DONE', 'FAILED')),
   keywords             text[] not null default '{}',
   due_at               timestamptz,
-  parent_task_id       uuid references public.tasks(id) on delete set null,
+  parent_task_id       uuid references public.aio_tasks(id) on delete set null,
   created_by           text not null default 'system' check (created_by in ('ceo', 'chief_of_staff', 'system')),
   source               text not null default 'morning_meeting' check (source in ('morning_meeting', 'ceo', 'project', 'approval_followup', 'system')),
   retry_count          int not null default 0,
@@ -162,34 +162,34 @@ create table public.tasks (
   created_at           timestamptz not null default now(),
   updated_at           timestamptz not null default now()
 );
-create index tasks_company_status_idx on public.tasks(company_id, status, created_at desc);
-create index tasks_run_idx on public.tasks(run_id);
+create index aio_tasks_company_status_idx on public.aio_tasks(company_id, status, created_at desc);
+create index aio_tasks_run_idx on public.aio_tasks(run_id);
 
-alter table public.employees
-  add constraint employees_current_task_fk foreign key (current_task_id) references public.tasks(id) on delete set null;
+alter table public.aio_employees
+  add constraint aio_employees_current_task_fk foreign key (current_task_id) references public.aio_tasks(id) on delete set null;
 
-create table public.task_results (
+create table public.aio_task_results (
   id             uuid primary key default gen_random_uuid(),
-  company_id     uuid not null references public.companies(id) on delete cascade,
-  task_id        uuid not null references public.tasks(id) on delete cascade,
-  employee_id    uuid references public.employees(id) on delete set null,
+  company_id     uuid not null references public.aio_companies(id) on delete cascade,
+  task_id        uuid not null references public.aio_tasks(id) on delete cascade,
+  employee_id    uuid references public.aio_employees(id) on delete set null,
   stage          text not null check (stage in ('research', 'review', 'analysis', 'content', 'summary')),
   output         jsonb not null,
   summary        text,
   confidence     numeric(5,2),
   review_status  text not null default 'pending' check (review_status in ('pending', 'passed', 'rejected', 'needs_revision')),
-  reviewer_id    uuid references public.employees(id) on delete set null,
+  reviewer_id    uuid references public.aio_employees(id) on delete set null,
   review_notes   text,
   model          text,
   created_at     timestamptz not null default now()
 );
-create index task_results_company_idx on public.task_results(company_id, created_at desc);
-create index task_results_task_idx on public.task_results(task_id);
+create index aio_task_results_company_idx on public.aio_task_results(company_id, created_at desc);
+create index aio_task_results_task_idx on public.aio_task_results(task_id);
 
-create table public.sources (
+create table public.aio_sources (
   id              uuid primary key default gen_random_uuid(),
-  company_id      uuid not null references public.companies(id) on delete cascade,
-  task_result_id  uuid references public.task_results(id) on delete set null,
+  company_id      uuid not null references public.aio_companies(id) on delete cascade,
+  task_result_id  uuid references public.aio_task_results(id) on delete set null,
   title           text not null,
   url             text not null check (url ~* '^https?://'),
   normalized_url  text not null,
@@ -205,10 +205,10 @@ create table public.sources (
 -- ---------------------------------------------------------------------
 -- Trends
 -- ---------------------------------------------------------------------
-create table public.trends (
+create table public.aio_trends (
   id                 uuid primary key default gen_random_uuid(),
-  company_id         uuid not null references public.companies(id) on delete cascade,
-  run_id             uuid references public.workday_runs(id) on delete set null,
+  company_id         uuid not null references public.aio_companies(id) on delete cascade,
+  run_id             uuid references public.aio_workday_runs(id) on delete set null,
   slug               text not null,
   name               text not null,
   category           text not null default 'ai_trend' check (category in ('ai_trend', 'vibe_coding', 'market', 'other')),
@@ -227,26 +227,26 @@ create table public.trends (
   status             text not null default 'active' check (status in ('new', 'active', 'watching', 'archived')),
   fact_check_status  text not null default 'unverified' check (fact_check_status in ('verified', 'unverified', 'rejected')),
   fact_check_notes   text,
-  discovered_by      uuid references public.employees(id) on delete set null,
+  discovered_by      uuid references public.aio_employees(id) on delete set null,
   first_seen_at      timestamptz not null default now(),
   last_seen_at       timestamptz not null default now(),
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now(),
   unique (company_id, slug)
 );
-create index trends_company_score_idx on public.trends(company_id, current_score desc);
+create index aio_trends_company_score_idx on public.aio_trends(company_id, current_score desc);
 
-create table public.trend_sources (
-  trend_id    uuid not null references public.trends(id) on delete cascade,
-  source_id   uuid not null references public.sources(id) on delete cascade,
-  company_id  uuid not null references public.companies(id) on delete cascade,
+create table public.aio_trend_sources (
+  trend_id    uuid not null references public.aio_trends(id) on delete cascade,
+  source_id   uuid not null references public.aio_sources(id) on delete cascade,
+  company_id  uuid not null references public.aio_companies(id) on delete cascade,
   primary key (trend_id, source_id)
 );
 
-create table public.trend_snapshots (
+create table public.aio_trend_snapshots (
   id             uuid primary key default gen_random_uuid(),
-  company_id     uuid not null references public.companies(id) on delete cascade,
-  trend_id       uuid not null references public.trends(id) on delete cascade,
+  company_id     uuid not null references public.aio_companies(id) on delete cascade,
+  trend_id       uuid not null references public.aio_trends(id) on delete cascade,
   snapshot_date  date not null,
   current_score  int not null,
   growth_score   int not null,
@@ -257,12 +257,12 @@ create table public.trend_snapshots (
 -- ---------------------------------------------------------------------
 -- Opportunities / Content
 -- ---------------------------------------------------------------------
-create table public.opportunities (
+create table public.aio_opportunities (
   id                 uuid primary key default gen_random_uuid(),
-  company_id         uuid not null references public.companies(id) on delete cascade,
-  run_id             uuid references public.workday_runs(id) on delete set null,
-  trend_id           uuid references public.trends(id) on delete set null,
-  project_id         uuid references public.projects(id) on delete set null,
+  company_id         uuid not null references public.aio_companies(id) on delete cascade,
+  run_id             uuid references public.aio_workday_runs(id) on delete set null,
+  trend_id           uuid references public.aio_trends(id) on delete set null,
+  project_id         uuid references public.aio_projects(id) on delete set null,
   title              text not null,
   trend              text,
   problem            text,
@@ -276,18 +276,18 @@ create table public.opportunities (
   development_time   text,
   opportunity_score  int not null default 0 check (opportunity_score between 0 and 100),
   status             text not null default 'IDEA' check (status in ('IDEA', 'RESEARCHING', 'VALIDATING', 'BUILD', 'LAUNCHED', 'ARCHIVED')),
-  created_by         uuid references public.employees(id) on delete set null,
+  created_by         uuid references public.aio_employees(id) on delete set null,
   created_at         timestamptz not null default now(),
   updated_at         timestamptz not null default now()
 );
-create index opportunities_company_idx on public.opportunities(company_id, opportunity_score desc);
+create index aio_opportunities_company_idx on public.aio_opportunities(company_id, opportunity_score desc);
 
-create table public.content_ideas (
+create table public.aio_content_ideas (
   id                  uuid primary key default gen_random_uuid(),
-  company_id          uuid not null references public.companies(id) on delete cascade,
-  run_id              uuid references public.workday_runs(id) on delete set null,
-  trend_id            uuid references public.trends(id) on delete set null,
-  project_id          uuid references public.projects(id) on delete set null,
+  company_id          uuid not null references public.aio_companies(id) on delete cascade,
+  run_id              uuid references public.aio_workday_runs(id) on delete set null,
+  trend_id            uuid references public.aio_trends(id) on delete set null,
+  project_id          uuid references public.aio_projects(id) on delete set null,
   title               text not null,
   trend               text,
   angle               text,
@@ -306,16 +306,16 @@ create table public.content_ideas (
   status              text not null default 'IDEA' check (status in ('IDEA', 'WRITING', 'DESIGN', 'CEO_REVIEW', 'SCHEDULED', 'PUBLISHED')),
   scheduled_for       date,
   published_at        timestamptz,
-  created_by          uuid references public.employees(id) on delete set null,
+  created_by          uuid references public.aio_employees(id) on delete set null,
   created_at          timestamptz not null default now(),
   updated_at          timestamptz not null default now()
 );
-create index content_ideas_company_idx on public.content_ideas(company_id, total_score desc);
+create index aio_content_ideas_company_idx on public.aio_content_ideas(company_id, total_score desc);
 
-create table public.content_posts (
+create table public.aio_content_posts (
   id                uuid primary key default gen_random_uuid(),
-  company_id        uuid not null references public.companies(id) on delete cascade,
-  content_idea_id   uuid not null references public.content_ideas(id) on delete cascade,
+  company_id        uuid not null references public.aio_companies(id) on delete cascade,
+  content_idea_id   uuid not null references public.aio_content_ideas(id) on delete cascade,
   platform          text not null,
   url               text,
   published_at      timestamptz,
@@ -331,46 +331,46 @@ create table public.content_posts (
 -- ---------------------------------------------------------------------
 -- Meetings
 -- ---------------------------------------------------------------------
-create table public.meetings (
+create table public.aio_meetings (
   id              uuid primary key default gen_random_uuid(),
-  company_id      uuid not null references public.companies(id) on delete cascade,
-  run_id          uuid references public.workday_runs(id) on delete set null,
-  project_id      uuid references public.projects(id) on delete set null,
+  company_id      uuid not null references public.aio_companies(id) on delete cascade,
+  run_id          uuid references public.aio_workday_runs(id) on delete set null,
+  project_id      uuid references public.aio_projects(id) on delete set null,
   type            text not null check (type in ('morning', 'team', 'executive', 'project')),
   topic           text not null,
   status          text not null default 'in_progress' check (status in ('scheduled', 'in_progress', 'completed')),
   rounds          int not null default 0,
-  coordinator_id  uuid references public.employees(id) on delete set null,
+  coordinator_id  uuid references public.aio_employees(id) on delete set null,
   started_at      timestamptz not null default now(),
   ended_at        timestamptz,
   created_at      timestamptz not null default now()
 );
-create index meetings_company_idx on public.meetings(company_id, created_at desc);
+create index aio_meetings_company_idx on public.aio_meetings(company_id, created_at desc);
 
-create table public.meeting_participants (
-  meeting_id   uuid not null references public.meetings(id) on delete cascade,
-  employee_id  uuid not null references public.employees(id) on delete cascade,
-  company_id   uuid not null references public.companies(id) on delete cascade,
+create table public.aio_meeting_participants (
+  meeting_id   uuid not null references public.aio_meetings(id) on delete cascade,
+  employee_id  uuid not null references public.aio_employees(id) on delete cascade,
+  company_id   uuid not null references public.aio_companies(id) on delete cascade,
   primary key (meeting_id, employee_id)
 );
 
-create table public.meeting_messages (
+create table public.aio_meeting_messages (
   id           uuid primary key default gen_random_uuid(),
-  meeting_id   uuid not null references public.meetings(id) on delete cascade,
-  company_id   uuid not null references public.companies(id) on delete cascade,
-  employee_id  uuid references public.employees(id) on delete set null,
+  meeting_id   uuid not null references public.aio_meetings(id) on delete cascade,
+  company_id   uuid not null references public.aio_companies(id) on delete cascade,
+  employee_id  uuid references public.aio_employees(id) on delete set null,
   round        int not null default 1,
   stance       text not null default 'opinion' check (stance in ('opinion', 'agree', 'disagree', 'supplement', 'summary')),
-  reply_to     uuid references public.meeting_messages(id) on delete set null,
+  reply_to     uuid references public.aio_meeting_messages(id) on delete set null,
   content      text not null,
   created_at   timestamptz not null default now()
 );
-create index meeting_messages_meeting_idx on public.meeting_messages(meeting_id, round, created_at);
+create index aio_meeting_messages_meeting_idx on public.aio_meeting_messages(meeting_id, round, created_at);
 
-create table public.meeting_minutes (
+create table public.aio_meeting_minutes (
   id                     uuid primary key default gen_random_uuid(),
-  meeting_id             uuid not null unique references public.meetings(id) on delete cascade,
-  company_id             uuid not null references public.companies(id) on delete cascade,
+  meeting_id             uuid not null unique references public.aio_meetings(id) on delete cascade,
+  company_id             uuid not null references public.aio_companies(id) on delete cascade,
   topic                  text not null,
   participants           jsonb not null default '[]'::jsonb,
   discussion             text,
@@ -386,11 +386,11 @@ create table public.meeting_minutes (
 -- ---------------------------------------------------------------------
 -- Approvals / Memory / Performance / Briefs
 -- ---------------------------------------------------------------------
-create table public.approvals (
+create table public.aio_approvals (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
-  run_id               uuid references public.workday_runs(id) on delete set null,
-  project_id           uuid references public.projects(id) on delete set null,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
+  run_id               uuid references public.aio_workday_runs(id) on delete set null,
+  project_id           uuid references public.aio_projects(id) on delete set null,
   title                text not null,
   type                 text not null default 'other' check (type in ('research', 'opportunity', 'content', 'strategy', 'project', 'promotion', 'budget', 'other')),
   summary              text,
@@ -399,7 +399,7 @@ create table public.approvals (
   recommendation       text,
   alternatives         jsonb not null default '[]'::jsonb,
   cost                 text,
-  employee_id          uuid references public.employees(id) on delete set null,
+  employee_id          uuid references public.aio_employees(id) on delete set null,
   related_entity_type  text,
   related_entity_id    uuid,
   status               text not null default 'PENDING' check (status in ('PENDING', 'APPROVED', 'REJECTED', 'MORE_RESEARCH', 'REVISION', 'ON_HOLD')),
@@ -408,11 +408,11 @@ create table public.approvals (
   decided_at           timestamptz,
   created_at           timestamptz not null default now()
 );
-create index approvals_company_status_idx on public.approvals(company_id, status, created_at desc);
+create index aio_approvals_company_status_idx on public.aio_approvals(company_id, status, created_at desc);
 
-create table public.company_memory (
+create table public.aio_company_memory (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
   category             text not null check (category in (
                          'ceo_preferences', 'brand_identity', 'content_strategy', 'rejected_ideas', 'approved_ideas',
                          'best_content', 'bad_content', 'current_projects', 'business_interests', 'research_interests', 'past_decisions')),
@@ -423,12 +423,12 @@ create table public.company_memory (
   related_entity_id    uuid,
   created_at           timestamptz not null default now()
 );
-create index company_memory_company_idx on public.company_memory(company_id, category, created_at desc);
+create index aio_company_memory_company_idx on public.aio_company_memory(company_id, category, created_at desc);
 
-create table public.employee_performance (
+create table public.aio_employee_performance (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
-  employee_id          uuid not null references public.employees(id) on delete cascade,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
+  employee_id          uuid not null references public.aio_employees(id) on delete cascade,
   period_date          date not null,
   accuracy             numeric(5,2) not null default 0,
   approval_rate        numeric(5,2) not null default 0,
@@ -443,10 +443,10 @@ create table public.employee_performance (
   unique (employee_id, period_date)
 );
 
-create table public.daily_briefs (
+create table public.aio_daily_briefs (
   id                   uuid primary key default gen_random_uuid(),
-  company_id           uuid not null references public.companies(id) on delete cascade,
-  run_id               uuid references public.workday_runs(id) on delete set null,
+  company_id           uuid not null references public.aio_companies(id) on delete cascade,
+  run_id               uuid references public.aio_workday_runs(id) on delete set null,
   brief_date           date not null,
   title                text not null,
   executive_summary    text,
@@ -465,9 +465,9 @@ create table public.daily_briefs (
 -- ---------------------------------------------------------------------
 -- Notion
 -- ---------------------------------------------------------------------
-create table public.notion_connections (
+create table public.aio_notion_connections (
   id                uuid primary key default gen_random_uuid(),
-  company_id        uuid not null unique references public.companies(id) on delete cascade,
+  company_id        uuid not null unique references public.aio_companies(id) on delete cascade,
   auth_type         text not null check (auth_type in ('oauth', 'token', 'env')),
   access_token_enc  text,          -- AES-256-GCM 암호화. authenticated 역할은 SELECT 불가 (rls.sql 참고)
   workspace_id      text,
@@ -481,9 +481,9 @@ create table public.notion_connections (
   updated_at        timestamptz not null default now()
 );
 
-create table public.notion_databases (
+create table public.aio_notion_databases (
   id              uuid primary key default gen_random_uuid(),
-  company_id      uuid not null references public.companies(id) on delete cascade,
+  company_id      uuid not null references public.aio_companies(id) on delete cascade,
   key             text not null check (key in ('daily_brief', 'ai_trends', 'vibe_coding', 'opportunities', 'content_ideas', 'meetings', 'ceo_decisions', 'projects')),
   database_id     text not null,
   data_source_id  text not null,
@@ -492,9 +492,9 @@ create table public.notion_databases (
   unique (company_id, key)
 );
 
-create table public.notion_sync_queue (
+create table public.aio_notion_sync_queue (
   id               uuid primary key default gen_random_uuid(),
-  company_id       uuid not null references public.companies(id) on delete cascade,
+  company_id       uuid not null references public.aio_companies(id) on delete cascade,
   entity_type      text not null check (entity_type in ('daily_brief', 'trend', 'opportunity', 'content_idea', 'meeting', 'approval', 'project')),
   entity_id        uuid not null,
   action           text not null default 'upsert' check (action in ('upsert')),
@@ -506,12 +506,12 @@ create table public.notion_sync_queue (
   created_at       timestamptz not null default now(),
   synced_at        timestamptz
 );
-create index notion_sync_queue_pending_idx on public.notion_sync_queue(status, next_attempt_at);
-create unique index notion_sync_queue_open_unique
-  on public.notion_sync_queue(entity_type, entity_id) where status in ('PENDING', 'PROCESSING');
+create index aio_notion_sync_queue_pending_idx on public.aio_notion_sync_queue(status, next_attempt_at);
+create unique index aio_notion_sync_queue_open_unique
+  on public.aio_notion_sync_queue(entity_type, entity_id) where status in ('PENDING', 'PROCESSING');
 
-create table public.notion_pages (
-  company_id   uuid not null references public.companies(id) on delete cascade,
+create table public.aio_notion_pages (
+  company_id   uuid not null references public.aio_companies(id) on delete cascade,
   entity_type  text not null,
   entity_id    uuid not null,
   page_id      text not null,
@@ -522,12 +522,12 @@ create table public.notion_pages (
 -- ---------------------------------------------------------------------
 -- AI usage
 -- ---------------------------------------------------------------------
-create table public.ai_usage (
+create table public.aio_ai_usage (
   id                uuid primary key default gen_random_uuid(),
-  company_id        uuid not null references public.companies(id) on delete cascade,
-  run_id            uuid references public.workday_runs(id) on delete set null,
-  task_id           uuid references public.tasks(id) on delete set null,
-  employee_id       uuid references public.employees(id) on delete set null,
+  company_id        uuid not null references public.aio_companies(id) on delete cascade,
+  run_id            uuid references public.aio_workday_runs(id) on delete set null,
+  task_id           uuid references public.aio_tasks(id) on delete set null,
+  employee_id       uuid references public.aio_employees(id) on delete set null,
   agent             text not null,
   model             text not null,
   purpose           text,
@@ -540,13 +540,13 @@ create table public.ai_usage (
   error             text,
   created_at        timestamptz not null default now()
 );
-create index ai_usage_company_created_idx on public.ai_usage(company_id, created_at desc);
-create index ai_usage_employee_created_idx on public.ai_usage(employee_id, created_at desc);
+create index aio_ai_usage_company_created_idx on public.aio_ai_usage(company_id, created_at desc);
+create index aio_ai_usage_employee_created_idx on public.aio_ai_usage(employee_id, created_at desc);
 
 -- ---------------------------------------------------------------------
 -- updated_at triggers
 -- ---------------------------------------------------------------------
-create or replace function public.set_updated_at() returns trigger
+create or replace function public.aio_set_updated_at() returns trigger
 language plpgsql as $$
 begin
   new.updated_at = now();
@@ -556,24 +556,24 @@ end $$;
 do $$
 declare t text;
 begin
-  foreach t in array array['companies', 'company_settings', 'projects', 'tasks', 'trends', 'opportunities', 'content_ideas', 'notion_connections']
+  foreach t in array array['aio_companies', 'aio_company_settings', 'aio_projects', 'aio_tasks', 'aio_trends', 'aio_opportunities', 'aio_content_ideas', 'aio_notion_connections']
   loop
-    execute format('create trigger %I_set_updated_at before update on public.%I for each row execute function public.set_updated_at()', t, t);
+    execute format('create trigger %I_set_updated_at before update on public.%I for each row execute function public.aio_set_updated_at()', t, t);
   end loop;
 end $$;
 
 -- ---------------------------------------------------------------------
 -- New auth user → profile
 -- ---------------------------------------------------------------------
-create or replace function public.handle_new_user() returns trigger
+create or replace function public.aio_handle_new_user() returns trigger
 language plpgsql security definer set search_path = '' as $$
 begin
-  insert into public.profiles (id, email, display_name)
+  insert into public.aio_profiles (id, email, display_name)
   values (new.id, new.email, coalesce(new.raw_user_meta_data ->> 'display_name', split_part(new.email, '@', 1)))
   on conflict (id) do nothing;
   return new;
 end $$;
 
-create trigger on_auth_user_created
+create trigger aio_on_auth_user_created
   after insert on auth.users
-  for each row execute function public.handle_new_user();
+  for each row execute function public.aio_handle_new_user();

@@ -12,7 +12,7 @@ export function buildEmployeeRow(params: {
   name?: string;
   position?: Position;
   interests?: string[];
-}): TablesInsert<"employees"> {
+}): TablesInsert<"aio_employees"> {
   const role = ROLE_CATALOG[params.role];
   const position = params.position ?? role.defaultPosition;
   const config = POSITION_CONFIG[position];

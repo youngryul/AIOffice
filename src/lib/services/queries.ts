@@ -11,7 +11,7 @@ import type { RunSnapshot } from "@/components/app/workday-runner";
 
 export async function getLatestRun(supabase: ServerSupabase, companyId: string): Promise<RunSnapshot | null> {
   const { data } = await supabase
-    .from("workday_runs")
+    .from("aio_workday_runs")
     .select("id, stage, status, error, stage_log")
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })
@@ -24,18 +24,18 @@ export async function getOfficeEmployees(supabase: ServerSupabase, companyId: st
   const since = startOfDayInTz(new Date(), timezone).toISOString();
   const [{ data: employees }, { data: tasks }, { data: usage }] = await Promise.all([
     supabase
-      .from("employees")
+      .from("aio_employees")
       .select("*, current:current_task_id(title)")
       .eq("company_id", companyId)
       .eq("is_active", true)
       .order("level", { ascending: false }),
     supabase
-      .from("tasks")
+      .from("aio_tasks")
       .select("assigned_employee, title, status, updated_at")
       .eq("company_id", companyId)
       .order("updated_at", { ascending: false })
       .limit(100),
-    supabase.from("ai_usage").select("employee_id, input_tokens, output_tokens, estimated_cost").eq("company_id", companyId).gte("created_at", since),
+    supabase.from("aio_ai_usage").select("employee_id, input_tokens, output_tokens, estimated_cost").eq("company_id", companyId).gte("created_at", since),
   ]);
 
   return (employees ?? []).map((e) => {
@@ -74,7 +74,7 @@ export interface CostSummary {
 }
 
 export async function getCostSummary(supabase: ServerSupabase, timezone: string): Promise<CostSummary> {
-  const { data } = await supabase.rpc("ai_cost_summary", { p_tz: timezone });
+  const { data } = await supabase.rpc("aio_ai_cost_summary", { p_tz: timezone });
   const d = (data ?? {}) as Partial<CostSummary>;
   return {
     today: Number(d.today ?? 0),

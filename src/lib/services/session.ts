@@ -12,7 +12,7 @@ export const getSession = cache(async () => {
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub;
   if (!userId) return null;
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", userId).maybeSingle();
+  const { data: profile } = await supabase.from("aio_profiles").select("*").eq("id", userId).maybeSingle();
   return { supabase, userId, email: (claims?.claims?.email as string | undefined) ?? profile?.email ?? null, profile };
 });
 
@@ -27,8 +27,8 @@ export const requireCompany = cache(async () => {
   const companyId = session.profile?.company_id;
   if (!companyId) redirect("/onboarding");
   const [{ data: company }, { data: settings }] = await Promise.all([
-    session.supabase.from("companies").select("*").eq("id", companyId).single(),
-    session.supabase.from("company_settings").select("*").eq("company_id", companyId).single(),
+    session.supabase.from("aio_companies").select("*").eq("id", companyId).single(),
+    session.supabase.from("aio_company_settings").select("*").eq("company_id", companyId).single(),
   ]);
   if (!company || !settings) redirect("/onboarding");
   if (!company.onboarding_completed) redirect("/onboarding");

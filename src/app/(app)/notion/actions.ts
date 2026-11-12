@@ -37,7 +37,7 @@ export async function connectWithToken(_prev: NotionActionState, formData: FormD
     const me = await client.users.me({});
     if (parentId) await client.pages.retrieve({ page_id: parentId }); // 접근 권한 확인
     const db = createAdminClient();
-    await db.from("notion_connections").upsert(
+    await db.from("aio_notion_connections").upsert(
       {
         company_id: companyId,
         auth_type: useEnv ? "env" : "token",
@@ -52,7 +52,7 @@ export async function connectWithToken(_prev: NotionActionState, formData: FormD
       },
       { onConflict: "company_id" },
     );
-    await db.from("notion_databases").delete().eq("company_id", companyId);
+    await db.from("aio_notion_databases").delete().eq("company_id", companyId);
     if (parentId) {
       await ensureNotionWorkspace(db, companyId);
       return done("Notion 연결 완료! AI OFFICE 페이지와 Database 8개를 만들었습니다.");
@@ -68,8 +68,8 @@ export async function selectParentPage(_prev: NotionActionState, formData: FormD
   const pageId = extractNotionId(String(formData.get("page_id") ?? ""));
   if (!pageId) return { error: "페이지를 선택하세요." };
   const db = createAdminClient();
-  await db.from("notion_connections").update({ parent_page_id: pageId, root_page_id: null }).eq("company_id", companyId);
-  await db.from("notion_databases").delete().eq("company_id", companyId);
+  await db.from("aio_notion_connections").update({ parent_page_id: pageId, root_page_id: null }).eq("company_id", companyId);
+  await db.from("aio_notion_databases").delete().eq("company_id", companyId);
   try {
     await ensureNotionWorkspace(db, companyId);
     return done("AI OFFICE 워크스페이스를 만들었습니다.");
@@ -101,7 +101,7 @@ export async function syncNow(): Promise<NotionActionState> {
 export async function retryFailed(): Promise<NotionActionState> {
   const { supabase, companyId } = await requireCompany();
   await supabase
-    .from("notion_sync_queue")
+    .from("aio_notion_sync_queue")
     .update({ status: "PENDING", retry_count: 0, next_attempt_at: new Date().toISOString(), error: null })
     .eq("company_id", companyId)
     .eq("status", "FAILED");
@@ -113,13 +113,13 @@ export async function backfill(): Promise<NotionActionState> {
   const { supabase, companyId } = await requireCompany();
   const since = new Date(Date.now() - 30 * 86_400_000).toISOString();
   const [briefs, trends, opps, contents, meetings, approvals, projects] = await Promise.all([
-    supabase.from("daily_briefs").select("id").eq("company_id", companyId).gte("created_at", since),
-    supabase.from("trends").select("id").eq("company_id", companyId).neq("status", "archived").gte("last_seen_at", since),
-    supabase.from("opportunities").select("id").eq("company_id", companyId).gte("created_at", since),
-    supabase.from("content_ideas").select("id").eq("company_id", companyId).gte("created_at", since),
-    supabase.from("meetings").select("id").eq("company_id", companyId).gte("created_at", since),
-    supabase.from("approvals").select("id").eq("company_id", companyId).neq("status", "PENDING"),
-    supabase.from("projects").select("id").eq("company_id", companyId),
+    supabase.from("aio_daily_briefs").select("id").eq("company_id", companyId).gte("created_at", since),
+    supabase.from("aio_trends").select("id").eq("company_id", companyId).neq("status", "archived").gte("last_seen_at", since),
+    supabase.from("aio_opportunities").select("id").eq("company_id", companyId).gte("created_at", since),
+    supabase.from("aio_content_ideas").select("id").eq("company_id", companyId).gte("created_at", since),
+    supabase.from("aio_meetings").select("id").eq("company_id", companyId).gte("created_at", since),
+    supabase.from("aio_approvals").select("id").eq("company_id", companyId).neq("status", "PENDING"),
+    supabase.from("aio_projects").select("id").eq("company_id", companyId),
   ]);
   const pick = (type: NotionEntityType, rows: { id: string }[] | null) => (rows ?? []).map((r) => ({ entityType: type, entityId: r.id }));
   const items = [
@@ -137,12 +137,12 @@ export async function backfill(): Promise<NotionActionState> {
 
 export async function disconnectNotion() {
   const { supabase, companyId } = await requireCompany();
-  await supabase.from("notion_connections").delete().eq("company_id", companyId);
+  await supabase.from("aio_notion_connections").delete().eq("company_id", companyId);
   revalidatePath("/notion");
 }
 
 export async function toggleAutoSync(enabled: boolean) {
   const { supabase, companyId } = await requireCompany();
-  await supabase.from("company_settings").update({ notion_auto_sync: z.boolean().parse(enabled) }).eq("company_id", companyId);
+  await supabase.from("aio_company_settings").update({ notion_auto_sync: z.boolean().parse(enabled) }).eq("company_id", companyId);
   revalidatePath("/notion");
 }

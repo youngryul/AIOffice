@@ -13,7 +13,7 @@ export async function setOpportunityStatus(opportunityId: string, formData: Form
   const status = z.enum(OPPORTUNITY_STATUSES).safeParse(formData.get("status"));
   if (!status.success) return;
   const { data } = await supabase
-    .from("opportunities")
+    .from("aio_opportunities")
     .update({ status: status.data })
     .eq("id", opportunityId)
     .eq("company_id", companyId)

@@ -59,19 +59,19 @@ export class RunAlreadyActiveError extends Error {
 
 export async function startRun(db: AdminSupabase, companyId: string, mode: WorkMode): Promise<RunRow> {
   if (!env().OPENAI_API_KEY) throw new AiNotConfiguredError();
-  const { data: settings } = await db.from("company_settings").select("timezone, ai_enabled").eq("company_id", companyId).single();
+  const { data: settings } = await db.from("aio_company_settings").select("timezone, ai_enabled").eq("company_id", companyId).single();
   if (settings && !settings.ai_enabled) throw new Error("설정에서 AI 업무가 비활성화되어 있습니다.");
 
-  const { data: running } = await db.from("workday_runs").select("*").eq("company_id", companyId).eq("status", "running").maybeSingle();
+  const { data: running } = await db.from("aio_workday_runs").select("*").eq("company_id", companyId).eq("status", "running").maybeSingle();
   if (running) throw new RunAlreadyActiveError(running);
 
   const { data, error } = await db
-    .from("workday_runs")
+    .from("aio_workday_runs")
     .insert({ company_id: companyId, run_date: dateInTz(new Date(), settings?.timezone ?? "Asia/Seoul"), mode })
     .select("*")
     .single();
   if (error?.code === "23505") {
-    const { data: again } = await db.from("workday_runs").select("*").eq("company_id", companyId).eq("status", "running").single();
+    const { data: again } = await db.from("aio_workday_runs").select("*").eq("company_id", companyId).eq("status", "running").single();
     if (again) throw new RunAlreadyActiveError(again);
   }
   if (error || !data) throw new Error(`업무 사이클 시작 실패: ${error?.message}`);
@@ -93,7 +93,7 @@ interface StageLogEntry {
 export async function advanceRun(db: AdminSupabase, companyId: string, runId: string): Promise<{ run: RunRow; advanced: boolean }> {
   const now = new Date();
   const { data: locked } = await db
-    .from("workday_runs")
+    .from("aio_workday_runs")
     .update({ locked_until: new Date(now.getTime() + LOCK_MS).toISOString() })
     .eq("id", runId)
     .eq("company_id", companyId)
@@ -103,7 +103,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
     .maybeSingle();
 
   if (!locked) {
-    const { data: current, error } = await db.from("workday_runs").select("*").eq("id", runId).eq("company_id", companyId).single();
+    const { data: current, error } = await db.from("aio_workday_runs").select("*").eq("id", runId).eq("company_id", companyId).single();
     if (error || !current) throw new Error("업무 사이클을 찾을 수 없습니다.");
     return { run: current, advanced: false };
   }
@@ -111,7 +111,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
   const stage = locked.stage as WorkflowStage;
   const log = (locked.stage_log as unknown as StageLogEntry[]) ?? [];
   if (stage === "done") {
-    const { data } = await db.from("workday_runs").update({ status: "completed", locked_until: null }).eq("id", runId).select("*").single();
+    const { data } = await db.from("aio_workday_runs").update({ status: "completed", locked_until: null }).eq("id", runId).select("*").single();
     return { run: data ?? locked, advanced: false };
   }
 
@@ -123,7 +123,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
     const next = nextStage(stage);
     const done = next === "done";
     const { data } = await db
-      .from("workday_runs")
+      .from("aio_workday_runs")
       .update({
         stage: next,
         stage_retry: 0,
@@ -146,7 +146,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
     const message = errorMessage(err);
     console.error(`[workflow] stage ${stage} failed (retry ${retries})`, message);
     const { data } = await db
-      .from("workday_runs")
+      .from("aio_workday_runs")
       .update({
         stage_retry: retries,
         locked_until: null,
@@ -168,7 +168,7 @@ export async function advanceRun(db: AdminSupabase, companyId: string, runId: st
 
 export async function cancelRun(db: AdminSupabase, companyId: string, runId: string) {
   await db
-    .from("workday_runs")
+    .from("aio_workday_runs")
     .update({ status: "cancelled", locked_until: null, completed_at: new Date().toISOString() })
     .eq("id", runId)
     .eq("company_id", companyId)
@@ -177,5 +177,5 @@ export async function cancelRun(db: AdminSupabase, companyId: string, runId: str
 }
 
 export async function setAllEmployees(db: AdminSupabase, companyId: string, status: "offline" | "working" | "break") {
-  await db.from("employees").update({ status, current_task_id: null }).eq("company_id", companyId).eq("is_active", true);
+  await db.from("aio_employees").update({ status, current_task_id: null }).eq("company_id", companyId).eq("is_active", true);
 }

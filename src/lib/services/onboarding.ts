@@ -28,16 +28,16 @@ export type OnboardingInput = z.infer<typeof OnboardingSchema>;
  * userId 는 반드시 서버에서 검증된 세션의 값이어야 한다.
  */
 export async function createCompanyForUser(db: AdminSupabase, userId: string, input: OnboardingInput) {
-  const { data: profile } = await db.from("profiles").select("company_id").eq("id", userId).single();
+  const { data: profile } = await db.from("aio_profiles").select("company_id").eq("id", userId).single();
   if (profile?.company_id) {
-    const { data: existing } = await db.from("companies").select("id, onboarding_completed").eq("id", profile.company_id).single();
+    const { data: existing } = await db.from("aio_companies").select("id, onboarding_completed").eq("id", profile.company_id).single();
     if (existing?.onboarding_completed) return existing.id;
     // 온보딩 도중 실패한 회사는 정리 후 다시 만든다
-    await db.from("companies").delete().eq("id", profile.company_id).eq("owner_id", userId);
+    await db.from("aio_companies").delete().eq("id", profile.company_id).eq("owner_id", userId);
   }
 
   const { data: company, error } = await db
-    .from("companies")
+    .from("aio_companies")
     .insert({
       owner_id: userId,
       name: input.companyName,
@@ -53,9 +53,9 @@ export async function createCompanyForUser(db: AdminSupabase, userId: string, in
   const companyId = company.id;
 
   try {
-    await db.from("profiles").update({ company_id: companyId }).eq("id", userId);
+    await db.from("aio_profiles").update({ company_id: companyId }).eq("id", userId);
 
-    const { error: sErr } = await db.from("company_settings").insert({
+    const { error: sErr } = await db.from("aio_company_settings").insert({
       company_id: companyId,
       timezone: input.timezone,
       work_mode: "FAST",
@@ -65,7 +65,7 @@ export async function createCompanyForUser(db: AdminSupabase, userId: string, in
 
     const roles: RoleKey[] = input.roles.includes("chief_of_staff") ? input.roles : ["chief_of_staff", ...input.roles];
     const { data: employees, error: eErr } = await db
-      .from("employees")
+      .from("aio_employees")
       .insert(roles.map((role) => buildEmployeeRow({ companyId, userId, role, interests: role === "chief_of_staff" ? [] : input.interests.slice(0, 5) })))
       .select("id, role");
     if (eErr) throw new Error(eErr.message);
@@ -76,7 +76,7 @@ export async function createCompanyForUser(db: AdminSupabase, userId: string, in
       ...(input.brandDirection ? [{ category: "brand_identity" as const, content: `브랜드 방향: ${input.brandDirection}` }] : []),
     ];
     if (memories.length) {
-      await db.from("company_memory").insert(memories.map((m) => ({ ...m, company_id: companyId, source: "ceo" as const, weight: 2 })));
+      await db.from("aio_company_memory").insert(memories.map((m) => ({ ...m, company_id: companyId, source: "ceo" as const, weight: 2 })));
     }
 
     if (input.withDemo) {
@@ -84,10 +84,10 @@ export async function createCompanyForUser(db: AdminSupabase, userId: string, in
       await seedDemoData(db, companyId, dateInTz(new Date(), input.timezone), ids);
     }
 
-    await db.from("companies").update({ onboarding_completed: true }).eq("id", companyId);
+    await db.from("aio_companies").update({ onboarding_completed: true }).eq("id", companyId);
     return companyId;
   } catch (err) {
-    await db.from("companies").delete().eq("id", companyId);
+    await db.from("aio_companies").delete().eq("id", companyId);
     throw err;
   }
 }

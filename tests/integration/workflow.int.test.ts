@@ -117,7 +117,7 @@ beforeAll(async () => {
     withDemo: false,
   });
   // Notion 이 연결된 회사처럼 만들어 Queue 적재까지 확인
-  await db.from("notion_connections").insert({ company_id: companyId, auth_type: "env", status: "connected" });
+  await db.from("aio_notion_connections").insert({ company_id: companyId, auth_type: "env", status: "connected" });
 });
 
 afterAll(async () => {
@@ -136,32 +136,32 @@ describe("FAST MODE workday cycle", () => {
     expect(run.error, stages.join(" | ")).toBeNull();
     expect(run.status).toBe("completed");
 
-    const count = async (table: "tasks" | "trends" | "opportunities" | "content_ideas" | "meetings" | "approvals" | "daily_briefs" | "notion_sync_queue" | "sources" | "meeting_messages") =>
+    const count = async (table: "aio_tasks" | "aio_trends" | "aio_opportunities" | "aio_content_ideas" | "aio_meetings" | "aio_approvals" | "aio_daily_briefs" | "aio_notion_sync_queue" | "aio_sources" | "aio_meeting_messages") =>
       (await db.from(table).select("*", { count: "exact", head: true }).eq("company_id", companyId)).count ?? 0;
 
-    expect(await count("tasks")).toBeGreaterThanOrEqual(4);
-    expect(await count("sources")).toBe(1); // 같은 URL 은 1개로 정규화
-    const { data: trends } = await db.from("trends").select("*").eq("company_id", companyId);
+    expect(await count("aio_tasks")).toBeGreaterThanOrEqual(4);
+    expect(await count("aio_sources")).toBe(1); // 같은 URL 은 1개로 정규화
+    const { data: trends } = await db.from("aio_trends").select("*").eq("company_id", companyId);
     expect(trends).toHaveLength(1); // 출처 없는 루머는 탈락, 같은 이슈는 하나로 묶임
     expect(trends![0]).toMatchObject({ name: "AI Agent SDK", fact_check_status: "verified", try_worthy: true });
     expect(trends![0].mention_count).toBeGreaterThanOrEqual(2);
 
-    const { data: opps } = await db.from("opportunities").select("opportunity_score").eq("company_id", companyId);
+    const { data: opps } = await db.from("aio_opportunities").select("opportunity_score").eq("company_id", companyId);
     expect(opps![0].opportunity_score).toBe(100); // clamp
-    const { data: contents } = await db.from("content_ideas").select("total_score, score_originality, status").eq("company_id", companyId);
+    const { data: contents } = await db.from("aio_content_ideas").select("total_score, score_originality, status").eq("company_id", companyId);
     expect(contents).toHaveLength(4);
     expect(contents!.every((c) => c.score_originality <= 20)).toBe(true);
     expect(contents!.some((c) => c.status === "CEO_REVIEW")).toBe(true);
 
-    expect(await count("meetings")).toBe(2); // morning + executive
-    expect(await count("meeting_messages")).toBeGreaterThan(4);
-    expect(await count("approvals")).toBe(3);
-    const { data: brief } = await db.from("daily_briefs").select("*").eq("company_id", companyId).single();
+    expect(await count("aio_meetings")).toBe(2); // morning + executive
+    expect(await count("aio_meeting_messages")).toBeGreaterThan(4);
+    expect(await count("aio_approvals")).toBe(3);
+    const { data: brief } = await db.from("aio_daily_briefs").select("*").eq("company_id", companyId).single();
     expect((brief!.things_to_try as unknown[]).length).toBe(1);
     expect(brief!.approval_ids).toHaveLength(3);
-    expect(await count("notion_sync_queue")).toBeGreaterThanOrEqual(5);
+    expect(await count("aio_notion_sync_queue")).toBeGreaterThanOrEqual(5);
 
-    const { data: emps } = await db.from("employees").select("status").eq("company_id", companyId);
+    const { data: emps } = await db.from("aio_employees").select("status").eq("company_id", companyId);
     expect(emps!.every((e) => e.status === "offline")).toBe(true); // 퇴근
 
     // 같은 Run 은 두 번 진행되지 않는다
@@ -170,19 +170,19 @@ describe("FAST MODE workday cycle", () => {
   }, 120_000);
 
   it("CEO approval → execution, memory and follow-up task", async () => {
-    const { data: approvals } = await db.from("approvals").select("*").eq("company_id", companyId).order("created_at");
+    const { data: approvals } = await db.from("aio_approvals").select("*").eq("company_id", companyId).order("created_at");
     const opp = approvals!.find((a) => a.related_entity_type === "opportunity")!;
     await decideApproval(db, { companyId, approvalId: opp.id, decision: "APPROVED", tags: ["사업 아이디어로 좋음"], note: null });
-    const { data: o } = await db.from("opportunities").select("status").eq("id", opp.related_entity_id!).single();
+    const { data: o } = await db.from("aio_opportunities").select("status").eq("id", opp.related_entity_id!).single();
     expect(o!.status).toBe("RESEARCHING");
 
     const other = approvals!.find((a) => a.related_entity_type === null)!;
     await decideApproval(db, { companyId, approvalId: other.id, decision: "MORE_RESEARCH", tags: [], note: "경쟁사도 조사" });
-    const { data: follow } = await db.from("tasks").select("*").eq("company_id", companyId).eq("source", "approval_followup");
+    const { data: follow } = await db.from("aio_tasks").select("*").eq("company_id", companyId).eq("source", "approval_followup");
     expect(follow).toHaveLength(1);
     expect(follow![0].run_id).toBeNull(); // 다음 Morning Meeting 에서 편입
 
-    const { count } = await db.from("company_memory").select("*", { count: "exact", head: true }).eq("company_id", companyId).eq("source", "feedback");
+    const { count } = await db.from("aio_company_memory").select("*", { count: "exact", head: true }).eq("company_id", companyId).eq("source", "feedback");
     expect(count).toBe(2);
   });
 
@@ -191,21 +191,21 @@ describe("FAST MODE workday cycle", () => {
     const first = await processNotionQueue(db, { companyId, limit: 100 });
     expect(first.processed).toBeGreaterThan(0);
     expect(first.retried).toBe(first.processed);
-    const { data: jobs } = await db.from("notion_sync_queue").select("status, retry_count, error, next_attempt_at").eq("company_id", companyId);
+    const { data: jobs } = await db.from("aio_notion_sync_queue").select("status, retry_count, error, next_attempt_at").eq("company_id", companyId);
     expect(jobs!.every((j) => j.status === "PENDING" && j.retry_count === 1 && j.error)).toBe(true);
     expect(jobs!.every((j) => new Date(j.next_attempt_at) > new Date())).toBe(true);
 
     // 재시도 시간을 앞당겨 2번 더 실패시키면 FAILED
     for (let i = 0; i < 2; i++) {
-      await db.from("notion_sync_queue").update({ next_attempt_at: new Date(0).toISOString() }).eq("company_id", companyId).eq("status", "PENDING");
+      await db.from("aio_notion_sync_queue").update({ next_attempt_at: new Date(0).toISOString() }).eq("company_id", companyId).eq("status", "PENDING");
       await processNotionQueue(db, { companyId, limit: 100 });
     }
-    const { data: after } = await db.from("notion_sync_queue").select("status, retry_count").eq("company_id", companyId);
+    const { data: after } = await db.from("aio_notion_sync_queue").select("status, retry_count").eq("company_id", companyId);
     expect(after!.every((j) => j.status === "FAILED" && j.retry_count === 3)).toBe(true);
   });
 
   it("rejects advancing another company's run", async () => {
-    const { data: run } = await db.from("workday_runs").select("id").eq("company_id", companyId).single();
+    const { data: run } = await db.from("aio_workday_runs").select("id").eq("company_id", companyId).single();
     await expect(advanceRun(db, "00000000-0000-0000-0000-000000000000", run!.id)).rejects.toThrow();
   });
 });

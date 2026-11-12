@@ -7,7 +7,7 @@ import type { Tables } from "@/lib/supabase/database.types";
 
 export const NOTION_VERSION = "2025-09-03";
 
-export type NotionConnection = Tables<"notion_connections">;
+export type NotionConnection = Tables<"aio_notion_connections">;
 
 export function notionClient(token: string): Client {
   return new Client({ auth: token, notionVersion: NOTION_VERSION, timeoutMs: 30_000 });
@@ -25,7 +25,7 @@ export function resolveToken(conn: Pick<NotionConnection, "auth_type" | "access_
 }
 
 export async function getCompanyNotion(db: AdminSupabase, companyId: string) {
-  const { data: conn } = await db.from("notion_connections").select("*").eq("company_id", companyId).maybeSingle();
+  const { data: conn } = await db.from("aio_notion_connections").select("*").eq("company_id", companyId).maybeSingle();
   if (!conn || conn.status === "disconnected") return null;
   return { conn, client: notionClient(resolveToken(conn)) };
 }

@@ -68,7 +68,7 @@ export async function runMeeting(
         continue;
       }
       const { speaker, turn } = t.value;
-      const msgs: TablesInsert<"meeting_messages">[] = [
+      const msgs: TablesInsert<"aio_meeting_messages">[] = [
         {
           meeting_id: meeting.id,
           company_id: ctx.company.id,
@@ -92,7 +92,7 @@ export async function runMeeting(
           content: `@${participants[target].agent.name} ${r.comment}`,
         });
       }
-      const { data: inserted } = await ctx.db.from("meeting_messages").insert(msgs).select("id, stance");
+      const { data: inserted } = await ctx.db.from("aio_meeting_messages").insert(msgs).select("id, stance");
       transcript.push({ round, speaker, turn, messageId: inserted?.find((m) => m.stance === "opinion")?.id ?? null });
     }
   }
@@ -125,7 +125,7 @@ export async function runMeeting(
     minutes = res.output;
   }
 
-  await ctx.db.from("meeting_minutes").insert({
+  await ctx.db.from("aio_meeting_minutes").insert({
     meeting_id: meeting.id,
     company_id: ctx.company.id,
     topic: params.topic,
@@ -145,7 +145,7 @@ export async function runMeeting(
     ceo_approval_required: minutes?.ceo_approval_required ?? false,
   });
   await ctx.db
-    .from("meetings")
+    .from("aio_meetings")
     .update({ status: "completed", rounds, ended_at: new Date().toISOString() })
     .eq("id", meeting.id);
   await Promise.all([params.coordinator, ...participants.map((p) => p.agent)].map((a) => a.setStatus("working")));

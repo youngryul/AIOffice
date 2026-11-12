@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "설정" };
 export default async function SettingsPage() {
   const { supabase, companyId, company, settings } = await requireCompany();
   const { data: memory } = await supabase
-    .from("company_memory")
+    .from("aio_company_memory")
     .select("*")
     .eq("company_id", companyId)
     .order("created_at", { ascending: false })

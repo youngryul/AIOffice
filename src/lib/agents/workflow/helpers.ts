@@ -5,7 +5,7 @@ import { BudgetExceededError, errorMessage } from "@/lib/ai/errors";
 import type { RoleKey } from "@/lib/types/domain";
 import type { WorkflowContext } from "./context";
 
-export type TaskRow = Tables<"tasks">;
+export type TaskRow = Tables<"aio_tasks">;
 export type TaskType = TaskRow["task_type"];
 
 export function taskTypeForRole(role: RoleKey): TaskType {
@@ -45,7 +45,7 @@ export async function runLimited<T, R>(items: T[], limit: number, fn: (item: T) 
 }
 
 export async function updateTask(db: AdminSupabase, companyId: string, taskId: string, patch: Partial<TaskRow>) {
-  const { error } = await db.from("tasks").update(patch).eq("id", taskId).eq("company_id", companyId);
+  const { error } = await db.from("aio_tasks").update(patch).eq("id", taskId).eq("company_id", companyId);
   if (error) throw new Error(`Task 업데이트 실패: ${error.message}`);
 }
 
@@ -66,7 +66,7 @@ export async function ensureTask(
   params: { employeeId: string; taskType: TaskType; title: string; description: string; department: string },
 ): Promise<TaskRow> {
   const { data: existing } = await ctx.db
-    .from("tasks")
+    .from("aio_tasks")
     .select("*")
     .eq("company_id", ctx.company.id)
     .eq("run_id", ctx.run.id)
@@ -77,7 +77,7 @@ export async function ensureTask(
     .maybeSingle();
   if (existing) return existing;
 
-  const insert: TablesInsert<"tasks"> = {
+  const insert: TablesInsert<"aio_tasks"> = {
     company_id: ctx.company.id,
     run_id: ctx.run.id,
     title: params.title,
@@ -89,7 +89,7 @@ export async function ensureTask(
     created_by: "chief_of_staff",
     source: "system",
   };
-  const { data, error } = await ctx.db.from("tasks").insert(insert).select("*").single();
+  const { data, error } = await ctx.db.from("aio_tasks").insert(insert).select("*").single();
   if (error || !data) throw new Error(`Task 생성 실패: ${error?.message}`);
   return data;
 }
@@ -99,7 +99,7 @@ export async function createMeeting(
   params: { type: "morning" | "team" | "executive" | "project"; topic: string; coordinatorId: string | null; participantIds: string[] },
 ) {
   const { data: meeting, error } = await ctx.db
-    .from("meetings")
+    .from("aio_meetings")
     .insert({
       company_id: ctx.company.id,
       run_id: ctx.run.id,
@@ -114,7 +114,7 @@ export async function createMeeting(
   const participants = [...new Set(params.participantIds)];
   if (participants.length) {
     await ctx.db
-      .from("meeting_participants")
+      .from("aio_meeting_participants")
       .insert(participants.map((employee_id) => ({ meeting_id: meeting.id, employee_id, company_id: ctx.company.id })));
   }
   return meeting;

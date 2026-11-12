@@ -9,7 +9,7 @@ import { signOut } from "@/app/(auth)/actions";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { supabase, company, settings, companyId, email } = await requireCompany();
   const { count: pendingApprovals } = await supabase
-    .from("approvals")
+    .from("aio_approvals")
     .select("id", { count: "exact", head: true })
     .eq("company_id", companyId)
     .eq("status", "PENDING");

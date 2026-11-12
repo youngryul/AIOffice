@@ -37,8 +37,8 @@ export async function analysisStage(ctx: WorkflowContext) {
 
   // 시장조사 Finding (market_researcher 결과) 을 분석 근거로 함께 전달 — Previous Employee Output
   const { data: marketResults } = await ctx.db
-    .from("task_results")
-    .select("output, tasks!inner(run_id), employees(role)")
+    .from("aio_task_results")
+    .select("output, tasks:aio_tasks!inner(run_id), employees:aio_employees(role)")
     .eq("company_id", ctx.company.id)
     .eq("stage", "research")
     .eq("review_status", "passed")
@@ -60,7 +60,7 @@ export async function analysisStage(ctx: WorkflowContext) {
     });
     await analyst.setStatus("writing", task.id);
 
-    const rows: TablesInsert<"opportunities">[] = output.opportunities.map((o) => {
+    const rows: TablesInsert<"aio_opportunities">[] = output.opportunities.map((o) => {
       const ti = validIndex(o.trend_index, trends.length);
       return {
         company_id: ctx.company.id,
@@ -83,11 +83,11 @@ export async function analysisStage(ctx: WorkflowContext) {
       };
     });
     if (rows.length) {
-      const { error } = await ctx.db.from("opportunities").insert(rows);
+      const { error } = await ctx.db.from("aio_opportunities").insert(rows);
       if (error) throw new Error(`사업 기회 저장 실패: ${error.message}`);
     }
 
-    await ctx.db.from("task_results").insert({
+    await ctx.db.from("aio_task_results").insert({
       company_id: ctx.company.id,
       task_id: task.id,
       employee_id: analyst.id,

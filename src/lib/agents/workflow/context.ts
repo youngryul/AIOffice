@@ -7,7 +7,7 @@ import type { RoleKey } from "@/lib/types/domain";
 import { AgentEmployee } from "../agent";
 import { POSITION_CONFIG } from "../positions";
 
-export type RunRow = Tables<"workday_runs">;
+export type RunRow = Tables<"aio_workday_runs">;
 
 export interface WorkflowContext {
   db: AdminSupabase;
@@ -28,7 +28,7 @@ export interface WorkflowContext {
 export async function loadWorkflowContext(db: AdminSupabase, run: RunRow): Promise<WorkflowContext> {
   const company = await getCompanyContext(db, run.company_id);
   const { data: rows, error } = await db
-    .from("employees")
+    .from("aio_employees")
     .select("*")
     .eq("company_id", run.company_id)
     .eq("is_active", true)

@@ -25,13 +25,13 @@ export default async function NotionPage({ searchParams }: { searchParams: Promi
   // 사용자 세션으로 조회: access_token_enc 컬럼은 SELECT 권한 자체가 없다
   const [{ data: conn }, { data: dbs }, { data: queue }, { data: failed }] = await Promise.all([
     supabase
-      .from("notion_connections")
+      .from("aio_notion_connections")
       .select("auth_type, workspace_name, parent_page_id, root_page_id, status, last_error, connected_at")
       .eq("company_id", companyId)
       .maybeSingle(),
-    supabase.from("notion_databases").select("key, database_id, title").eq("company_id", companyId),
-    supabase.from("notion_sync_queue").select("status").eq("company_id", companyId).gte("created_at", daysAgoIso(30)),
-    supabase.from("notion_sync_queue").select("id, entity_type, error, retry_count, created_at").eq("company_id", companyId).eq("status", "FAILED").order("created_at", { ascending: false }).limit(10),
+    supabase.from("aio_notion_databases").select("key, database_id, title").eq("company_id", companyId),
+    supabase.from("aio_notion_sync_queue").select("status").eq("company_id", companyId).gte("created_at", daysAgoIso(30)),
+    supabase.from("aio_notion_sync_queue").select("id, entity_type, error, retry_count, created_at").eq("company_id", companyId).eq("status", "FAILED").order("created_at", { ascending: false }).limit(10),
   ]);
 
   let pages: { id: string; title: string }[] = [];

@@ -13,14 +13,14 @@ export const metadata: Metadata = { title: "트렌드 상세" };
 export default async function TrendDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const { supabase, companyId } = await requireCompany();
-  const { data: t } = await supabase.from("trends").select("*, employees:discovered_by(name, avatar)").eq("id", id).eq("company_id", companyId).maybeSingle();
+  const { data: t } = await supabase.from("aio_trends").select("*, employees:discovered_by(name, avatar)").eq("id", id).eq("company_id", companyId).maybeSingle();
   if (!t) notFound();
 
   const [{ data: links }, { data: opps }, { data: contents }, { data: history }] = await Promise.all([
-    supabase.from("trend_sources").select("sources(*)").eq("trend_id", id).eq("company_id", companyId),
-    supabase.from("opportunities").select("id, title, opportunity_score, status").eq("company_id", companyId).eq("trend_id", id),
-    supabase.from("content_ideas").select("id, title, platform, total_score").eq("company_id", companyId).eq("trend_id", id),
-    supabase.from("trend_snapshots").select("snapshot_date, current_score, mention_count").eq("trend_id", id).eq("company_id", companyId).order("snapshot_date", { ascending: false }).limit(30),
+    supabase.from("aio_trend_sources").select("sources:aio_sources(*)").eq("trend_id", id).eq("company_id", companyId),
+    supabase.from("aio_opportunities").select("id, title, opportunity_score, status").eq("company_id", companyId).eq("trend_id", id),
+    supabase.from("aio_content_ideas").select("id, title, platform, total_score").eq("company_id", companyId).eq("trend_id", id),
+    supabase.from("aio_trend_snapshots").select("snapshot_date, current_score, mention_count").eq("trend_id", id).eq("company_id", companyId).order("snapshot_date", { ascending: false }).limit(30),
   ]);
   const sources = (links ?? []).map((l) => l.sources).filter((s): s is NonNullable<typeof s> => s !== null);
   const discoverer = t.employees as { name: string; avatar: string } | null;

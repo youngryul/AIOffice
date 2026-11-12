@@ -15,8 +15,8 @@ export interface CompanyContext {
 
 export async function getCompanyContext(db: AdminSupabase, companyId: string): Promise<CompanyContext> {
   const [{ data: company, error }, { data: settings }] = await Promise.all([
-    db.from("companies").select("*").eq("id", companyId).single(),
-    db.from("company_settings").select("timezone").eq("company_id", companyId).maybeSingle(),
+    db.from("aio_companies").select("*").eq("id", companyId).single(),
+    db.from("aio_company_settings").select("timezone").eq("company_id", companyId).maybeSingle(),
   ]);
   if (error || !company) throw new Error(`회사 정보를 찾을 수 없습니다: ${error?.message ?? companyId}`);
   return {

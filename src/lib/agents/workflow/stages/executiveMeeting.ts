@@ -20,8 +20,8 @@ export async function executiveMeetingStage(ctx: WorkflowContext) {
   }
 
   const { data: results } = await ctx.db
-    .from("task_results")
-    .select("employee_id, stage, summary, output, review_status, tasks!inner(run_id)")
+    .from("aio_task_results")
+    .select("employee_id, stage, summary, output, review_status, tasks:aio_tasks!inner(run_id)")
     .eq("company_id", ctx.company.id)
     .eq("tasks.run_id", ctx.run.id)
     .neq("stage", "review")

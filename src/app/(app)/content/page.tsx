@@ -16,7 +16,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
   const { platform } = await searchParams;
   const { supabase, companyId } = await requireCompany();
   const pf = PLATFORMS.includes(platform as Platform) ? (platform as Platform) : null;
-  let q = supabase.from("content_ideas").select("*").eq("company_id", companyId).order("created_at", { ascending: false }).order("total_score", { ascending: false }).limit(120);
+  let q = supabase.from("aio_content_ideas").select("*").eq("company_id", companyId).order("created_at", { ascending: false }).order("total_score", { ascending: false }).limit(120);
   if (pf) q = q.eq("platform", pf);
   const { data: ideas } = await q;
 

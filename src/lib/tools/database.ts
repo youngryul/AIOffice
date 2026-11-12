@@ -5,19 +5,19 @@ import type { AdminSupabase } from "@/lib/supabase/admin";
 export async function recentCompanyRecords(db: AdminSupabase, companyId: string): Promise<string> {
   const [opps, posts, decisions] = await Promise.all([
     db
-      .from("opportunities")
+      .from("aio_opportunities")
       .select("title, opportunity_score, status")
       .eq("company_id", companyId)
       .order("created_at", { ascending: false })
       .limit(8),
     db
-      .from("content_posts")
-      .select("platform, views, likes, saves, shares, content_ideas(title)")
+      .from("aio_content_posts")
+      .select("platform, views, likes, saves, shares, content_ideas:aio_content_ideas(title)")
       .eq("company_id", companyId)
       .order("recorded_at", { ascending: false })
       .limit(8),
     db
-      .from("approvals")
+      .from("aio_approvals")
       .select("title, status, decision_note, feedback_tags")
       .eq("company_id", companyId)
       .neq("status", "PENDING")

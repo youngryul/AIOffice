@@ -3,7 +3,7 @@ import type { AdminSupabase } from "@/lib/supabase/admin";
 
 export async function activeProjects(db: AdminSupabase, companyId: string) {
   const { data } = await db
-    .from("projects")
+    .from("aio_projects")
     .select("id, name, goal, research_keywords, auto_research")
     .eq("company_id", companyId)
     .eq("status", "active")
