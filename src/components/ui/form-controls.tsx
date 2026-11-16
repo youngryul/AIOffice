@@ -3,10 +3,10 @@ import { Label as LabelPrimitive } from "radix-ui";
 import { cn } from "@/lib/utils";
 
 const fieldBase =
-  "w-full min-w-0 rounded-md border border-input bg-card px-3 text-sm shadow-xs outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive";
+  "w-full min-w-0 rounded-xl border-2 border-input bg-card px-3 text-sm outline-none transition-[color,box-shadow] placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive";
 
 function Input({ className, ...props }: React.ComponentProps<"input">) {
-  return <input data-slot="input" className={cn(fieldBase, "h-9 py-1", className)} {...props} />;
+  return <input data-slot="input" className={cn(fieldBase, "h-10 py-1", className)} {...props} />;
 }
 
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
@@ -14,7 +14,7 @@ function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
 }
 
 function NativeSelect({ className, ...props }: React.ComponentProps<"select">) {
-  return <select data-slot="select" className={cn(fieldBase, "h-9 py-1 pr-8", className)} {...props} />;
+  return <select data-slot="select" className={cn(fieldBase, "h-10 py-1 pr-8", className)} {...props} />;
 }
 
 function Label({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {

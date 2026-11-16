@@ -5,6 +5,7 @@ import { featureFlags } from "@/lib/env";
 import { MobileNav, SidebarNav } from "@/components/app/sidebar-nav";
 import { Badge } from "@/components/ui/badge";
 import { signOut } from "@/app/(auth)/actions";
+import { Critter } from "@/components/app/critter";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { supabase, company, settings, companyId, email } = await requireCompany();
@@ -17,13 +18,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r bg-card/60 p-4 lg:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r-2 bg-card/80 p-4 lg:flex">
         <Link href="/dashboard" className="mb-6 flex items-center gap-2 px-2">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-accent text-xl" aria-hidden>
-            🏢
+          <span className="flex size-11 items-center justify-center rounded-full bg-accent" aria-hidden>
+            <Critter role="chief_of_staff" status="break" className="size-9 animate-wiggle" />
           </span>
           <span className="grid leading-tight">
-            <span className="truncate text-sm font-bold">{company.name}</span>
+            <span className="truncate font-[family-name:var(--font-cute)] text-base">{company.name}</span>
             <span className="text-xs text-muted-foreground">AI Office</span>
           </span>
         </Link>
@@ -34,16 +35,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <span className="truncate">{email}</span>
           </div>
           <form action={signOut}>
-            <button className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground">
+            <button className="flex w-full items-center gap-2 rounded-full px-3 py-2 text-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground">
               <LogOutIcon className="size-4" /> 퇴근하기 (로그아웃)
             </button>
           </form>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b bg-card/60 lg:hidden">
+        <header className="border-b-2 bg-card/80 lg:hidden">
           <div className="flex items-center justify-between px-4 py-3">
-            <span className="font-bold">🏢 {company.name}</span>
+            <span className="flex items-center gap-1.5 font-[family-name:var(--font-cute)] text-lg">
+              <Critter role="chief_of_staff" status="break" className="size-7" /> {company.name}
+            </span>
             <form action={signOut}>
               <button className="text-xs text-muted-foreground">로그아웃</button>
             </form>
