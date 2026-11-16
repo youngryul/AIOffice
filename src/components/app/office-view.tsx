@@ -8,11 +8,13 @@ import { Badge } from "@/components/ui/badge";
 import { EMPLOYEE_STATUS_META } from "@/lib/labels";
 import type { Department, EmployeeStatus } from "@/lib/types/domain";
 import { cn, formatDateTime, formatUsd } from "@/lib/utils";
+import { CritterAvatar } from "@/components/app/critter";
 
 export interface OfficeEmployee {
   id: string;
   name: string;
   avatar: string;
+  role: string;
   roleTitle: string;
   department: Department;
   positionLabel: string;
@@ -43,20 +45,14 @@ const ANIMATION: Record<EmployeeStatus, string> = {
 };
 
 /**
- * 작은 사무실 Office View. 캐릭터는 지금은 Emoji 아바타이며,
- * EmployeeAvatar 컴포넌트만 바꾸면 이미지 아바타로 교체할 수 있다.
+ * 작은 사무실 Office View. 직원은 역할별 말랑 동물 캐릭터(critter.tsx)로 표시되며,
+ * 상태에 따라 표정과 움직임이 바뀐다.
  */
-export function EmployeeAvatar({ avatar, status, size = "md" }: { avatar: string; status: EmployeeStatus; size?: "md" | "lg" }) {
+export function EmployeeAvatar({ avatar, role, status, size = "md" }: { avatar: string; role?: string; status: EmployeeStatus; size?: "md" | "lg" }) {
   return (
-    <span
-      className={cn(
-        "flex items-center justify-center rounded-2xl bg-card shadow-sm ring-1 ring-border",
-        size === "lg" ? "size-16 text-4xl" : "size-12 text-2xl",
-        ANIMATION[status],
-      )}
-      aria-hidden
-    >
-      {avatar}
+    <span className={cn("relative inline-flex flex-col items-center", ANIMATION[status])}>
+      <CritterAvatar role={role} avatar={avatar} status={status} size={size === "lg" ? "lg" : "md"} />
+      <span className="-mt-1 h-1.5 w-2/3 rounded-full bg-black/10" aria-hidden />
     </span>
   );
 }
@@ -116,7 +112,7 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
                       <span className="rounded-full bg-card px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow-sm ring-1 ring-border">
                         {meta.emoji} {meta.label}
                       </span>
-                      <EmployeeAvatar avatar={e.avatar} status={e.status} />
+                      <EmployeeAvatar avatar={e.avatar} role={e.role} status={e.status} />
                       <span className="w-full truncate text-xs font-medium">{e.name}</span>
                     </button>
                   );
@@ -132,7 +128,7 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
         {selected ? (
           <SheetContent title={selected.name}>
             <div className="flex items-center gap-3">
-              <EmployeeAvatar avatar={selected.avatar} status={selected.status} size="lg" />
+              <EmployeeAvatar avatar={selected.avatar} role={selected.role} status={selected.status} size="lg" />
               <div className="grid gap-1">
                 <p className="text-sm font-medium">{selected.roleTitle}</p>
                 <div className="flex gap-1.5">

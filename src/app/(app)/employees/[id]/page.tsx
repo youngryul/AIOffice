@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CritterAvatar } from "@/components/app/critter";
 import { notFound } from "next/navigation";
 import { requireCompany } from "@/lib/services/session";
 import { ROLE_CATALOG, DEPARTMENT_LABELS } from "@/lib/agents/roles";
@@ -55,8 +56,8 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
   return (
     <div className="grid gap-6">
       <div className="flex flex-col gap-4 rounded-2xl border bg-card p-5 sm:flex-row sm:items-center">
-        <span className="flex size-16 items-center justify-center rounded-2xl bg-muted text-4xl" aria-hidden>
-          {e.avatar}
+        <span className="flex size-24 shrink-0 items-center justify-center rounded-full bg-muted" aria-hidden>
+          <CritterAvatar role={e.role} avatar={e.avatar} status={e.status as EmployeeStatus} size="lg" />
         </span>
         <div className="flex-1">
           <h1 className="text-2xl font-bold">{e.name}</h1>

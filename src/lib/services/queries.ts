@@ -45,6 +45,7 @@ export async function getOfficeEmployees(supabase: ServerSupabase, companyId: st
       id: e.id,
       name: e.name,
       avatar: e.avatar,
+      role: e.role,
       roleTitle: ROLE_CATALOG[e.role as RoleKey]?.title ?? e.role,
       department: e.department as Department,
       positionLabel: POSITION_CONFIG[e.position as Position].label,

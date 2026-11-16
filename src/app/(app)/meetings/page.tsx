@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { CritterAvatar } from "@/components/app/critter";
 import Link from "next/link";
 import { requireCompany } from "@/lib/services/session";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
   const [{ data: minutes }, { data: messages }] = selectedId
     ? await Promise.all([
         supabase.from("aio_meeting_minutes").select("*").eq("meeting_id", selectedId).eq("company_id", companyId).maybeSingle(),
-        supabase.from("aio_meeting_messages").select("*, employees:aio_employees(name, avatar)").eq("meeting_id", selectedId).eq("company_id", companyId).order("round").order("created_at"),
+        supabase.from("aio_meeting_messages").select("*, employees:aio_employees(name, avatar, role)").eq("meeting_id", selectedId).eq("company_id", companyId).order("round").order("created_at"),
       ])
     : [{ data: null }, { data: null }];
   const selected = meetings?.find((m) => m.id === selectedId);
@@ -130,12 +131,12 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
                 <h3 className="mb-3 text-sm font-semibold">발언 기록</h3>
                 <ol className="grid gap-3">
                   {(messages ?? []).map((m) => {
-                    const emp = m.employees as { name: string; avatar: string } | null;
+                    const emp = m.employees as { name: string; avatar: string; role: string } | null;
                     const stance = STANCE[m.stance] ?? STANCE.opinion;
                     return (
                       <li key={m.id} className={cn("flex gap-3", m.reply_to && "pl-8")}>
-                        <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-muted text-lg" aria-hidden>
-                          {emp?.avatar ?? "🤖"}
+                        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-muted" aria-hidden>
+                          <CritterAvatar role={emp?.role} avatar={emp?.avatar ?? "🤖"} status="meeting" size="sm" />
                         </span>
                         <div className="min-w-0 flex-1">
                           <p className="flex items-center gap-2 text-xs text-muted-foreground">

@@ -10,6 +10,7 @@ import { PageHeader, ScoreBar } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { formatUsd } from "@/lib/utils";
 import { HireForm } from "./hire-form";
+import { CritterAvatar } from "@/components/app/critter";
 import { rehireEmployee } from "./actions";
 
 export const metadata: Metadata = { title: "직원" };
@@ -38,8 +39,8 @@ export default async function EmployeesPage() {
           return (
             <Link key={e.id} href={`/employees/${e.id}`} className="grid gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50">
               <div className="flex items-center gap-3">
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-muted text-2xl" aria-hidden>
-                  {e.avatar}
+                <span className="flex size-16 items-center justify-center rounded-full bg-muted" aria-hidden>
+                  <CritterAvatar role={e.role} avatar={e.avatar} status={e.status as EmployeeStatus} size="md" />
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="font-semibold">{e.name}</p>
@@ -75,8 +76,8 @@ export default async function EmployeesPage() {
           <ul className="divide-y rounded-xl border bg-card">
             {former.map((e) => (
               <li key={e.id} className="flex items-center justify-between px-4 py-2 text-sm">
-                <span>
-                  {e.avatar} {e.name} · {ROLE_CATALOG[e.role as RoleKey].title}
+                <span className="flex items-center gap-2">
+                  <CritterAvatar role={e.role} avatar={e.avatar} status="offline" size="sm" className="grayscale" /> {e.name} · {ROLE_CATALOG[e.role as RoleKey].title}
                 </span>
                 <form action={rehireEmployee.bind(null, e.id)}>
                   <Button size="sm" variant="outline">
