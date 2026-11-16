@@ -68,7 +68,7 @@ export default async function EmployeeDetailPage({ params }: { params: Promise<{
             <Badge variant="outline">
               {cfg.label} (Lv.{cfg.level})
             </Badge>
-            <span className={`rounded-md px-2 py-0.5 text-xs ${meta.tone}`}>
+            <span className={`rounded-full px-2.5 py-0.5 text-xs ${meta.tone}`}>
               {meta.emoji} {meta.label}
             </span>
             {!e.is_active ? <Badge variant="danger">퇴사</Badge> : null}

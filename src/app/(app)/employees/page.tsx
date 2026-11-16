@@ -37,13 +37,13 @@ export default async function EmployeesPage() {
         {active.map((e) => {
           const meta = EMPLOYEE_STATUS_META[e.status as EmployeeStatus];
           return (
-            <Link key={e.id} href={`/employees/${e.id}`} className="grid gap-3 rounded-xl border bg-card p-4 transition-colors hover:border-primary/50">
+            <Link key={e.id} href={`/employees/${e.id}`} className="grid gap-3 rounded-2xl border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/50">
               <div className="flex items-center gap-3">
                 <span className="flex size-16 items-center justify-center rounded-full bg-muted" aria-hidden>
                   <CritterAvatar role={e.role} avatar={e.avatar} status={e.status as EmployeeStatus} size="md" />
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="font-semibold">{e.name}</p>
+                  <p className="font-[family-name:var(--font-cute)] text-lg leading-tight">{e.name}</p>
                   <p className="truncate text-xs text-muted-foreground">{ROLE_CATALOG[e.role as RoleKey].title}</p>
                 </div>
                 {e.promotion_candidate ? <Badge variant="success">승진 후보</Badge> : null}
@@ -51,7 +51,7 @@ export default async function EmployeesPage() {
               <div className="flex flex-wrap gap-1.5 text-xs">
                 <Badge variant="outline">{POSITION_CONFIG[e.position as Position].label}</Badge>
                 <Badge variant="secondary">{DEPARTMENT_LABELS[e.department as Department]}</Badge>
-                <span className={`rounded-md px-2 py-0.5 ${meta.tone}`}>
+                <span className={`rounded-full px-2.5 py-0.5 ${meta.tone}`}>
                   {meta.emoji} {meta.label}
                 </span>
               </div>

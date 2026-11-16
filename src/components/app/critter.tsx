@@ -1,4 +1,5 @@
 import { ROLE_CATALOG } from "@/lib/agents/roles";
+import { AVATAR_IMAGES } from "@/lib/avatar-images";
 import type { EmployeeStatus, RoleKey } from "@/lib/types/domain";
 import { cn } from "@/lib/utils";
 
@@ -45,14 +46,15 @@ const BODY_PATH =
   "M50 16 C74 16 88 33 88 55 C88 72 79 84 66 87 C64 91 60 92 57 88 C53 89 47 89 43 88 C40 92 36 91 34 87 C21 84 12 72 12 55 C12 33 26 16 50 16 Z";
 
 export const CRITTERS: Record<RoleKey, CritterDef> = {
-  // 🐧 비서실장 — 넥타이 맨 펭귄
+  // 🐧 비서실장 — 나비넥타이 맨 펭귄
   chief_of_staff: {
     species: "펭귄",
     body: "#fdfcf8",
     pattern: <path d="M50 16 C74 16 88 33 88 52 C80 40 66 36 50 44 C34 36 20 40 12 52 C12 33 26 16 50 16 Z" fill="#5b6f8f" {...line} />,
     front: (
       <>
-        <path d="M45 76 L50 72 L55 76 L52 86 L48 86 Z" fill="#e8737f" {...line} strokeWidth={2.4} />
+        <path d="M50 80 L41 75 L41 85 Z M50 80 L59 75 L59 85 Z" fill="#7d93c4" {...line} strokeWidth={2.2} />
+        <circle cx="50" cy="80" r="2.4" fill="#7d93c4" {...line} strokeWidth={2} />
         <path d="M14 58 C8 62 7 70 11 73" fill="none" {...line} />
         <path d="M86 58 C92 62 93 70 89 73" fill="none" {...line} />
       </>
@@ -277,7 +279,7 @@ const SIZE = {
   xl: "size-28",
 } as const;
 
-/** 역할을 알면 캐릭터, 모르면 기존 emoji 로 표시 */
+/** 우선순위: 사용자 이미지 슬롯(avatar-images.ts) → 역할별 동물 캐릭터 → emoji */
 export function CritterAvatar({
   role,
   avatar,
@@ -297,6 +299,19 @@ export function CritterAvatar({
       <span className={cn("inline-flex shrink-0 items-center justify-center", SIZE[size], className)} aria-hidden>
         <span className="text-[1.4em] leading-none">{avatar ?? "🤖"}</span>
       </span>
+    );
+  }
+  const image = AVATAR_IMAGES[key];
+  if (image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- 사용자가 넣은 임의 크기 이미지를 그대로 표시
+      <img
+        src={image}
+        alt=""
+        aria-hidden
+        draggable={false}
+        className={cn("shrink-0 object-contain", SIZE[size], status === "offline" && "grayscale", className)}
+      />
     );
   }
   return <Critter role={key} status={status} className={cn("shrink-0", SIZE[size], className)} />;

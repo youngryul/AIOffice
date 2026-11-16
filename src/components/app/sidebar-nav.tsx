@@ -53,8 +53,10 @@ export function SidebarNav({ pendingApprovals }: { pendingApprovals: number }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
-              active ? "bg-accent font-medium text-accent-foreground" : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
+              "flex items-center gap-2.5 rounded-full border-2 px-3 py-1.5 text-sm transition-colors",
+              active
+                ? "border-[var(--primary-shadow)]/40 bg-accent font-medium text-accent-foreground shadow-[0_2px_0_var(--border-strong)]"
+                : "border-transparent text-muted-foreground hover:bg-accent/60 hover:text-foreground",
             )}
           >
             <item.icon className="size-4" />
@@ -78,7 +80,7 @@ export function MobileNav() {
           key={item.href}
           href={item.href}
           className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-xs",
+            "shrink-0 rounded-full border-2 px-3 py-1 text-xs",
             pathname === item.href ? "border-primary bg-primary text-primary-foreground" : "bg-card text-muted-foreground",
           )}
         >

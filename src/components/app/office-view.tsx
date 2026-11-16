@@ -25,13 +25,13 @@ export interface OfficeEmployee {
   usage: { costToday: number; tokensToday: number; dailyBudget: number };
 }
 
-const ROOMS: { key: Department | "meeting"; label: string; tone: string }[] = [
-  { key: "executive", label: "CEO ROOM", tone: "from-violet-100/80 dark:from-violet-950/40" },
-  { key: "meeting", label: "회의실", tone: "from-amber-100/80 dark:from-amber-950/40" },
-  { key: "research", label: "Research Team", tone: "from-sky-100/80 dark:from-sky-950/40" },
-  { key: "content", label: "Content Team", tone: "from-pink-100/80 dark:from-pink-950/40" },
-  { key: "strategy", label: "Strategy Team", tone: "from-emerald-100/80 dark:from-emerald-950/40" },
-  { key: "quality", label: "Quality Team", tone: "from-zinc-100/80 dark:from-zinc-800/40" },
+const ROOMS: { key: Department | "meeting"; label: string; deco: string; tone: string }[] = [
+  { key: "executive", label: "CEO ROOM", deco: "👑", tone: "bg-[oklch(0.96_0.03_300)] dark:bg-[oklch(0.27_0.04_300)]" },
+  { key: "meeting", label: "회의실", deco: "☕", tone: "bg-[oklch(0.97_0.04_85)] dark:bg-[oklch(0.27_0.04_70)]" },
+  { key: "research", label: "Research Team", deco: "🔭", tone: "bg-[oklch(0.96_0.03_230)] dark:bg-[oklch(0.27_0.04_240)]" },
+  { key: "content", label: "Content Team", deco: "🌷", tone: "bg-[oklch(0.96_0.03_10)] dark:bg-[oklch(0.27_0.04_10)]" },
+  { key: "strategy", label: "Strategy Team", deco: "🪴", tone: "bg-[oklch(0.96_0.04_150)] dark:bg-[oklch(0.27_0.04_150)]" },
+  { key: "quality", label: "Quality Team", deco: "🔎", tone: "bg-[oklch(0.96_0.02_70)] dark:bg-[oklch(0.27_0.02_60)]" },
 ];
 
 const ANIMATION: Record<EmployeeStatus, string> = {
@@ -81,19 +81,22 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
 
   return (
     <>
-      <div className="grid gap-3 rounded-2xl border bg-[var(--office-floor)] bg-[linear-gradient(var(--office-tile)_1px,transparent_1px),linear-gradient(90deg,var(--office-tile)_1px,transparent_1px)] bg-[size:24px_24px] p-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 rounded-3xl border-2 border-border-strong bg-[var(--office-floor)] bg-[linear-gradient(var(--office-tile)_1px,transparent_1px),linear-gradient(90deg,var(--office-tile)_1px,transparent_1px)] bg-[size:28px_28px] p-4 sm:grid-cols-2 lg:grid-cols-3">
         {rooms.map((room) => {
           const people = employees.filter((e) => roomOf(e) === room.key);
           return (
-            <section key={room.key} className={cn("min-h-36 rounded-xl border bg-gradient-to-b to-card/90 p-3", room.tone)} aria-label={room.label}>
-              <h3 className="mb-2 flex items-center justify-between text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            <section key={room.key} className={cn("relative min-h-40 rounded-2xl border-2 border-border-strong p-3 pt-5 shadow-[0_3px_0_var(--border-strong)]", room.tone)} aria-label={room.label}>
+              <span className="pointer-events-none absolute right-3 bottom-2 text-xl opacity-70" aria-hidden>
+                {room.deco}
+              </span>
+              <h3 className="absolute -top-3 left-3 flex items-center gap-2 rounded-full border-2 border-border-strong bg-card px-3 py-0.5 font-[family-name:var(--font-cute)] text-xs text-foreground">
                 {room.label}
-                {room.key === "meeting" && people.length ? <span className="normal-case">💬 회의 진행 중</span> : null}
+                {room.key === "meeting" && people.length ? <span className="text-primary">💬 회의 중</span> : null}
               </h3>
-              <div className="flex flex-wrap gap-3">
+              <div className="mt-1 flex flex-wrap gap-2">
                 {room.key === "executive" ? (
                   <div className="flex w-20 flex-col items-center gap-1 text-center">
-                    <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl ring-1 ring-primary/30" aria-hidden>
+                    <span className="flex size-14 items-center justify-center rounded-full border-2 border-border-strong bg-card text-3xl" aria-hidden>
                       👑
                     </span>
                     <span className="text-xs font-medium">CEO (나)</span>
@@ -106,14 +109,14 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
                       key={e.id}
                       type="button"
                       onClick={() => setSelectedId(e.id)}
-                      className="group flex w-20 flex-col items-center gap-1 rounded-xl p-1 text-center outline-none hover:bg-card/60 focus-visible:ring-2 focus-visible:ring-ring"
+                      className="group flex w-20 flex-col items-center gap-0.5 rounded-2xl p-1 text-center outline-none transition-transform hover:-translate-y-0.5 hover:bg-card/70 focus-visible:ring-2 focus-visible:ring-ring"
                       aria-label={`${e.name} — ${meta.label}`}
                     >
-                      <span className="rounded-full bg-card px-1.5 py-0.5 text-[10px] whitespace-nowrap shadow-sm ring-1 ring-border">
+                      <span className="rounded-full border-[1.5px] border-border-strong bg-card px-1.5 py-0.5 text-[10px] whitespace-nowrap">
                         {meta.emoji} {meta.label}
                       </span>
                       <EmployeeAvatar avatar={e.avatar} role={e.role} status={e.status} />
-                      <span className="w-full truncate text-xs font-medium">{e.name}</span>
+                      <span className="w-full truncate font-[family-name:var(--font-cute)] text-xs">{e.name}</span>
                     </button>
                   );
                 })}
@@ -133,7 +136,7 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
                 <p className="text-sm font-medium">{selected.roleTitle}</p>
                 <div className="flex gap-1.5">
                   <Badge variant="outline">{selected.positionLabel}</Badge>
-                  <span className={cn("rounded-md px-2 py-0.5 text-xs", EMPLOYEE_STATUS_META[selected.status].tone)}>
+                  <span className={cn("rounded-full px-2 py-0.5 text-xs", EMPLOYEE_STATUS_META[selected.status].tone)}>
                     {EMPLOYEE_STATUS_META[selected.status].emoji} {EMPLOYEE_STATUS_META[selected.status].label}
                   </span>
                 </div>
