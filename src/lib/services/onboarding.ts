@@ -53,7 +53,13 @@ export async function createCompanyForUser(db: AdminSupabase, userId: string, in
   const companyId = company.id;
 
   try {
-    await db.from("aio_profiles").update({ company_id: companyId }).eq("id", userId);
+    // 가입 트리거 이전에 만들어진 계정(공유 DB)은 profile 행이 없을 수 있으므로 upsert 한다
+    const { data: authUser } = await db.auth.admin.getUserById(userId);
+    const email = authUser.user?.email ?? null;
+    const { error: pErr } = await db
+      .from("aio_profiles")
+      .upsert({ id: userId, email, display_name: email ? email.split("@")[0] : null, company_id: companyId }, { onConflict: "id" });
+    if (pErr) throw new Error(pErr.message);
 
     const { error: sErr } = await db.from("aio_company_settings").insert({
       company_id: companyId,
