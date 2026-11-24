@@ -10,6 +10,7 @@ import { PageHeader } from "@/components/ui/misc";
 import { formatDate } from "@/lib/utils";
 import { deleteMemoryItem } from "./actions";
 import { CompanyForm, MemoryForm, WorkSettingsForm } from "./settings-forms";
+import { ResetCompanySection } from "./reset-section";
 
 export const metadata: Metadata = { title: "설정" };
 
@@ -109,6 +110,8 @@ export default async function SettingsPage() {
           ))}
         </ul>
       </section>
+
+      <ResetCompanySection companyName={company.name} />
     </div>
   );
 }

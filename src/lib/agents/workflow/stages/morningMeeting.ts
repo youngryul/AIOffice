@@ -122,7 +122,7 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
   // 회의 기록 (Morning Meeting)
   const meeting = await createMeeting(ctx, {
     type: "morning",
-    topic: `${ctx.today} Morning Meeting`,
+    topic: `${ctx.today} 아침 회의`,
     coordinatorId: cos?.id ?? null,
     participantIds: ctx.employees.map((e) => e.id),
   });
@@ -162,5 +162,5 @@ export async function morningMeetingStage(ctx: WorkflowContext) {
     .update({ plan: toJson(plan ?? { focus_summary: "기본 업무 배분", agenda: [], assignments: [] }) })
     .eq("id", ctx.run.id);
   await Promise.all(ctx.employees.map((e) => e.setStatus("working")));
-  ctx.log(`📋 Morning Meeting: ${rows.length}개 업무 배정${followups.length ? `, CEO 후속 지시 ${followups.length}건 편입` : ""}`);
+  ctx.log(`📋 아침 회의: ${rows.length}개 업무 배정${followups.length ? `, CEO 후속 지시 ${followups.length}건 편입` : ""}`);
 }

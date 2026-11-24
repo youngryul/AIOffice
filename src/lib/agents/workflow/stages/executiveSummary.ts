@@ -180,5 +180,5 @@ export async function executiveSummaryStage(ctx: WorkflowContext) {
   for (const e of ctx.employees) await recomputeEmployeePerformance(ctx.db, ctx.company.id, e.id, ctx.today);
   if (exec) await exec.setStatus(approvalIds.length ? "approving" : "working");
 
-  ctx.log(`📨 CEO Report: Daily Brief 생성, 결재 안건 ${approvalIds.length}건, Notion 대기열 ${queue.length}건`);
+  ctx.log(`📨 CEO 보고: Daily Brief 생성, 결재 안건 ${approvalIds.length}건, Notion 대기열 ${queue.length}건`);
 }

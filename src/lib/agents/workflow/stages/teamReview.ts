@@ -290,5 +290,5 @@ export async function teamReviewStage(ctx: WorkflowContext) {
   }
 
   const passed = verdicts.filter((v) => v.pass).length;
-  ctx.log(`🔎 Team Review: Finding ${flat.length}개 중 ${passed}개 통과, 트렌드 ${registered}개 등록/갱신`);
+  ctx.log(`🔎 팀 검토: Finding ${flat.length}개 중 ${passed}개 통과, 트렌드 ${registered}개 등록/갱신`);
 }

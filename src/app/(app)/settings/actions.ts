@@ -1,8 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { requireCompany } from "@/lib/services/session";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { resetCompany } from "@/lib/services/reset";
 import { toJson } from "@/lib/supabase/json";
 import { isValidTimezone } from "@/lib/time";
 import { DEFAULT_SCHEDULE, MEMORY_CATEGORIES, type WorkSchedule } from "@/lib/types/domain";
@@ -95,6 +98,24 @@ export async function addMemoryItem(_prev: SettingsState, formData: FormData): P
   if (error) return { error: error.message };
   revalidatePath("/settings");
   return { ok: true };
+}
+
+/**
+ * 회사 초기화 (위험 작업). 클라이언트 팝업의 확인 절차와 별개로 서버에서도 한 번 더 검증한다:
+ *  - 안내 문구에 동의했는지
+ *  - 입력한 회사 이름이 현재 회사 이름과 정확히 같은지
+ */
+export async function resetCompanyAction(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  const { userId, companyId, company } = await requireCompany();
+  if (formData.get("acknowledge") !== "on") return { error: "삭제 내용을 확인했다는 항목에 체크하세요." };
+  if (String(formData.get("confirm_name") ?? "").trim() !== company.name) return { error: "회사 이름이 일치하지 않습니다." };
+  try {
+    await resetCompany(createAdminClient(), { userId, companyId });
+  } catch (err) {
+    return { error: err instanceof Error ? err.message : "초기화에 실패했습니다." };
+  }
+  revalidatePath("/", "layout");
+  redirect("/onboarding");
 }
 
 export async function deleteMemoryItem(id: string) {

@@ -49,10 +49,10 @@ export async function executiveMeetingStage(ctx: WorkflowContext) {
 
   const { minutes } = await runMeeting(ctx, {
     type: "executive",
-    topic: `${ctx.today} Executive Meeting — 오늘의 핵심 트렌드와 사업/콘텐츠 우선순위`,
+    topic: `${ctx.today} 임원 회의 — 오늘의 핵심 트렌드와 사업/콘텐츠 우선순위`,
     coordinator,
     participants,
     rounds: 2,
   });
-  ctx.log(`💬 Executive Meeting: 참가자 ${participants.length + 1}명, 결정 — ${truncate(minutes?.decision, 120) || "(없음)"}`);
+  ctx.log(`💬 임원 회의: 참가자 ${participants.length + 1}명, 결정 — ${truncate(minutes?.decision, 120) || "(없음)"}`);
 }

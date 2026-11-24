@@ -91,7 +91,7 @@ export function WorkdayRunner({ initialRun, aiReady, compact = false }: { initia
     try {
       const { run: started } = await post<{ run: RunSnapshot }>("/api/workday/start");
       setRun(started);
-      toast("☀️ 출근! Morning Meeting 을 시작합니다.");
+      toast("☀️ 출근! 아침 회의를 시작합니다.");
       await drive(started);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));

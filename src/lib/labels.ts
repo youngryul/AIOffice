@@ -76,13 +76,13 @@ export const TREND_CATEGORY_LABELS: Record<TrendCategory, string> = {
 };
 
 export const STAGE_LABELS: Record<WorkflowStage, string> = {
-  morning_meeting: "Morning Meeting",
-  research: "Research",
-  team_review: "Team Review · Fact Check",
-  analysis: "Business Analysis",
-  content: "Content Factory",
-  executive_meeting: "Executive Meeting",
-  executive_summary: "CEO Report",
+  morning_meeting: "아침 회의",
+  research: "자료 조사",
+  team_review: "팀 검토 · 팩트체크",
+  analysis: "사업 분석",
+  content: "콘텐츠 기획",
+  executive_meeting: "임원 회의",
+  executive_summary: "CEO 보고",
   done: "퇴근",
 };
 

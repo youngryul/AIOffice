@@ -29,13 +29,13 @@ export default async function OfficePage() {
           {(
             [
               ["start", "출근"],
-              ["morning_meeting", "Morning Meeting"],
-              ["research", "Research"],
-              ["team_review", "Team Review"],
-              ["content", "Content / Strategy"],
-              ["manager_review", "Manager Review"],
-              ["executive_meeting", "Executive Meeting"],
-              ["ceo_report", "CEO Report"],
+              ["morning_meeting", "아침 회의"],
+              ["research", "자료 조사"],
+              ["team_review", "팀 검토"],
+              ["content", "콘텐츠 기획"],
+              ["manager_review", "매니저 검토"],
+              ["executive_meeting", "임원 회의"],
+              ["ceo_report", "CEO 보고"],
               ["end", "퇴근"],
             ] as const
           ).map(([key, label]) => (

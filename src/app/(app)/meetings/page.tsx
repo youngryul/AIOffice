@@ -8,7 +8,7 @@ import { cn, formatDateTime } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "회의" };
 
-const TYPE_LABEL = { morning: "Morning Meeting", team: "Team Meeting", executive: "Executive Meeting", project: "Project Meeting" } as const;
+const TYPE_LABEL = { morning: "아침 회의", team: "팀 회의", executive: "임원 회의", project: "프로젝트 회의" } as const;
 const STANCE: Record<string, { label: string; tone: string }> = {
   opinion: { label: "의견", tone: "bg-muted" },
   agree: { label: "동의", tone: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300" },
@@ -155,7 +155,7 @@ export default async function MeetingsPage({ searchParams }: { searchParams: Pro
         </div>
       ) : (
         <EmptyState icon="💬" title="아직 회의가 없습니다">
-          업무 사이클이 시작되면 Morning Meeting 과 Executive Meeting 이 기록됩니다.
+          업무 사이클이 시작되면 아침 회의와 임원 회의가 기록됩니다.
         </EmptyState>
       )}
     </div>

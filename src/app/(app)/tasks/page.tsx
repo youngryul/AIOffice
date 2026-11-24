@@ -108,7 +108,7 @@ export default async function TasksPage({ searchParams }: { searchParams: Promis
         </div>
       ) : (
         <EmptyState icon="📋" title="업무가 없습니다">
-          &ldquo;오늘 업무 실행&rdquo; 을 누르면 비서실장이 Morning Meeting 에서 업무를 배분합니다.
+          &ldquo;오늘 업무 실행&rdquo; 을 누르면 비서실장이 아침 회의에서 업무를 배분합니다.
         </EmptyState>
       )}
     </div>
