@@ -99,13 +99,13 @@ isOneToOne: false
                   ]
                 },"aio_companies": {
                   Row: {
-                    "brand_direction": string | null,"brand_topics": (string)[],"created_at": string,"goals": string | null,"id": string,"interests": (string)[],"is_demo": boolean,"mission": string | null,"name": string,"onboarding_completed": boolean,"owner_id": string,"research_keywords": (string)[],"updated_at": string
+                    "brand_direction": string | null,"brand_topics": (string)[],"created_at": string,"goals": string | null,"id": string,"interests": (string)[],"is_demo": boolean,"mission": string | null,"name": string,"onboarding_completed": boolean,"owner_id": string,"reference_sites": Json,"research_keywords": (string)[],"updated_at": string
                   }
                   Insert: {
-                    "brand_direction"?: string | null,"brand_topics"?: (string)[],"created_at"?: string,"goals"?: string | null,"id"?: string,"interests"?: (string)[],"is_demo"?: boolean,"mission"?: string | null,"name": string,"onboarding_completed"?: boolean,"owner_id": string,"research_keywords"?: (string)[],"updated_at"?: string
+                    "brand_direction"?: string | null,"brand_topics"?: (string)[],"created_at"?: string,"goals"?: string | null,"id"?: string,"interests"?: (string)[],"is_demo"?: boolean,"mission"?: string | null,"name": string,"onboarding_completed"?: boolean,"owner_id": string,"reference_sites"?: Json,"research_keywords"?: (string)[],"updated_at"?: string
                   }
                   Update: {
-                    "brand_direction"?: string | null,"brand_topics"?: (string)[],"created_at"?: string,"goals"?: string | null,"id"?: string,"interests"?: (string)[],"is_demo"?: boolean,"mission"?: string | null,"name"?: string,"onboarding_completed"?: boolean,"owner_id"?: string,"research_keywords"?: (string)[],"updated_at"?: string
+                    "brand_direction"?: string | null,"brand_topics"?: (string)[],"created_at"?: string,"goals"?: string | null,"id"?: string,"interests"?: (string)[],"is_demo"?: boolean,"mission"?: string | null,"name"?: string,"onboarding_completed"?: boolean,"owner_id"?: string,"reference_sites"?: Json,"research_keywords"?: (string)[],"updated_at"?: string
                   }
                   Relationships: [
                     

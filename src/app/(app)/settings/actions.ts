@@ -6,6 +6,7 @@ import { z } from "zod";
 import { requireCompany } from "@/lib/services/session";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { resetCompany } from "@/lib/services/reset";
+import { MAX_REFERENCE_SITES, normalizeSiteUrl, parseReferenceSites } from "@/lib/reference-sites";
 import { toJson } from "@/lib/supabase/json";
 import { isValidTimezone } from "@/lib/time";
 import { DEFAULT_SCHEDULE, MEMORY_CATEGORIES, type WorkSchedule } from "@/lib/types/domain";
@@ -116,6 +117,31 @@ export async function resetCompanyAction(_prev: SettingsState, formData: FormDat
   }
   revalidatePath("/", "layout");
   redirect("/onboarding");
+}
+
+/** 참고 사이트 추가 — AI 직원이 조사할 때 함께 확인한다 */
+export async function addReferenceSite(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  const { supabase, companyId, company } = await requireCompany();
+  const url = normalizeSiteUrl(String(formData.get("url") ?? ""));
+  if (!url) return { error: "올바른 사이트 주소(http/https)를 입력하세요." };
+  const label = String(formData.get("label") ?? "").trim().slice(0, 60);
+  const current = parseReferenceSites(company.reference_sites);
+  if (current.some((s) => s.url === url)) return { error: "이미 등록된 사이트입니다." };
+  if (current.length >= MAX_REFERENCE_SITES) return { error: `사이트는 최대 ${MAX_REFERENCE_SITES}개까지 등록할 수 있습니다.` };
+  const { error } = await supabase
+    .from("aio_companies")
+    .update({ reference_sites: toJson([...current, { url, label }]) })
+    .eq("id", companyId);
+  if (error) return { error: error.message };
+  revalidatePath("/settings");
+  return { ok: true };
+}
+
+export async function removeReferenceSite(url: string) {
+  const { supabase, companyId, company } = await requireCompany();
+  const next = parseReferenceSites(company.reference_sites).filter((s) => s.url !== url);
+  await supabase.from("aio_companies").update({ reference_sites: toJson(next) }).eq("id", companyId);
+  revalidatePath("/settings");
 }
 
 export async function deleteMemoryItem(id: string) {

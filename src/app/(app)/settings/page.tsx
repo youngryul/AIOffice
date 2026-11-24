@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/misc";
 import { formatDate } from "@/lib/utils";
-import { deleteMemoryItem } from "./actions";
-import { CompanyForm, MemoryForm, WorkSettingsForm } from "./settings-forms";
+import { removeReferenceSite, deleteMemoryItem } from "./actions";
+import { parseReferenceSites, siteHostname } from "@/lib/reference-sites";
+import { CompanyForm, MemoryForm, ReferenceSiteForm, WorkSettingsForm } from "./settings-forms";
 import { ResetCompanySection } from "./reset-section";
 
 export const metadata: Metadata = { title: "설정" };
@@ -23,6 +24,7 @@ export default async function SettingsPage() {
     .order("created_at", { ascending: false })
     .limit(60);
   const flags = featureFlags();
+  const sites = parseReferenceSites(company.reference_sites);
 
   return (
     <div className="grid gap-6">
@@ -39,6 +41,37 @@ export default async function SettingsPage() {
           brand_topics={company.brand_topics}
           research_keywords={company.research_keywords}
         />
+      </section>
+
+      <section className="grid gap-4 rounded-xl border bg-card p-5">
+        <div>
+          <h2 className="font-semibold">내 웹사이트 (참고 사이트)</h2>
+          <p className="text-sm text-muted-foreground">
+            직접 만든 사이트 주소를 등록하면 AI 직원들이 조사할 때 해당 사이트의 주제와 최근 내용을 함께 참고하고, 조사 결과를 내 사이트와 연결해 제안합니다. (최대 10개)
+          </p>
+        </div>
+        <ReferenceSiteForm />
+        {sites.length ? (
+          <ul className="divide-y rounded-lg border">
+            {sites.map((s) => (
+              <li key={s.url} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{s.label || siteHostname(s.url)}</p>
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="truncate text-xs text-muted-foreground underline-offset-2 hover:underline">
+                    {s.url}
+                  </a>
+                </div>
+                <form action={removeReferenceSite.bind(null, s.url)}>
+                  <Button size="sm" variant="ghost" aria-label="삭제">
+                    ✕
+                  </Button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-sm text-muted-foreground">아직 등록된 사이트가 없습니다.</p>
+        )}
       </section>
 
       <section className="rounded-xl border bg-card p-5">

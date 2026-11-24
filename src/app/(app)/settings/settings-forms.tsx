@@ -6,7 +6,7 @@ import { Field, Input, NativeSelect, Textarea } from "@/components/ui/form-contr
 import { SubmitButton } from "@/components/app/submit-button";
 import { MEMORY_LABELS } from "@/lib/labels";
 import { MEMORY_CATEGORIES, type WorkSchedule } from "@/lib/types/domain";
-import { addMemoryItem, updateCompany, updateWorkSettings, type SettingsState } from "./actions";
+import { addMemoryItem, addReferenceSite, updateCompany, updateWorkSettings, type SettingsState } from "./actions";
 
 function useResult(state: SettingsState, ok: string, onOk?: () => void) {
   useEffect(() => {
@@ -124,6 +124,23 @@ export function WorkSettingsForm(props: {
       <div>
         <SubmitButton pendingText="저장 중…">저장</SubmitButton>
       </div>
+    </form>
+  );
+}
+
+export function ReferenceSiteForm() {
+  const ref = useRef<HTMLFormElement>(null);
+  const [state, action] = useActionState<SettingsState, FormData>(addReferenceSite, {});
+  useResult(state, "참고 사이트를 추가했습니다.", () => ref.current?.reset());
+  return (
+    <form ref={ref} action={action} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+      <Field label="사이트 주소" className="flex-1">
+        <Input name="url" required placeholder="https://my-site.com" maxLength={300} />
+      </Field>
+      <Field label="이름 (선택)">
+        <Input name="label" placeholder="예: 내 블로그" maxLength={60} />
+      </Field>
+      <SubmitButton pendingText="추가 중…">추가</SubmitButton>
     </form>
   );
 }

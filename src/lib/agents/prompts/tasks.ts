@@ -45,6 +45,7 @@ export function researchPrompt(params: { title: string; description: string; key
 3. 모든 Finding 은 sources 에 있는 실제 URL 을 source_urls 로 참조해야 한다. 출처가 없으면 is_speculation=true.
 4. 점수는 0~100 정수. 과장하지 말고 보수적으로 매긴다.
 5. insights 에는 사실이 아닌 "해석"을, recommendations 에는 CEO 가 할 수 있는 행동을 쓴다.
+6. 회사 컨텍스트에 "참고 사이트"가 있으면 그 사이트의 주제·최근 콘텐츠를 웹 검색으로 확인하고, 오늘 조사한 내용이 그 사이트와 어떻게 연결되는지(보완할 글감, 개선점, 경쟁/유사 사례)를 insights 와 recommendations 에 반영한다. 사이트에서 직접 확인하지 못한 내용은 추측으로 표시한다.
 `;
 }
 

@@ -1,5 +1,6 @@
 import "server-only";
 import type { AdminSupabase } from "@/lib/supabase/admin";
+import { parseReferenceSites, type ReferenceSite } from "@/lib/reference-sites";
 
 export interface CompanyContext {
   id: string;
@@ -10,6 +11,8 @@ export interface CompanyContext {
   interests: string[];
   brandTopics: string[];
   researchKeywords: string[];
+  /** CEO 가 운영하는 웹사이트 — 조사 시 함께 참고한다 */
+  referenceSites: ReferenceSite[];
   timezone: string;
 }
 
@@ -28,6 +31,7 @@ export async function getCompanyContext(db: AdminSupabase, companyId: string): P
     interests: company.interests,
     brandTopics: company.brand_topics,
     researchKeywords: company.research_keywords,
+    referenceSites: parseReferenceSites(company.reference_sites),
     timezone: settings?.timezone ?? "Asia/Seoul",
   };
 }
@@ -41,6 +45,11 @@ export function formatCompanyContext(c: CompanyContext): string {
     `CEO 관심 분야: ${c.interests.join(", ") || "(미설정)"}`,
     `브랜드 주제: ${c.brandTopics.join(", ") || "(미설정)"}`,
     `조사 키워드: ${c.researchKeywords.join(", ") || "(미설정)"}`,
+    c.referenceSites.length
+      ? `참고 사이트 (CEO 가 운영하는 사이트 — 조사 시 우선 확인):
+${c.referenceSites.map((s) => `- ${s.label ? `${s.label}: ` : ""}${s.url}`).join("
+")}`
+      : null,
   ]
     .filter(Boolean)
     .join("\n");

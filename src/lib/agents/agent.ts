@@ -146,7 +146,10 @@ export class AgentEmployee {
     let externalContent: string | null = null;
     let preRetrieved: string[] = [];
     if (opts.webSearchQueries?.length && canUse(this.tools, "webSearch")) {
-      const prepared = await getWebSearchProvider().prepare(opts.webSearchQueries);
+      const prepared = await getWebSearchProvider().prepare(
+        opts.webSearchQueries,
+        this.company.referenceSites.map((s) => s.url),
+      );
       tools = prepared.tools;
       externalContent = prepared.externalContent;
       preRetrieved = prepared.retrievedUrls;

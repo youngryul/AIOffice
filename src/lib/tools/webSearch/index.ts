@@ -20,7 +20,8 @@ export interface SearchPreparation {
 
 export interface WebSearchProvider {
   readonly name: string;
-  prepare(queries: string[]): Promise<SearchPreparation>;
+  /** sites: CEO 의 참고 사이트 주소. provider 가 지원하면 해당 도메인을 함께 검색한다 */
+  prepare(queries: string[], sites?: string[]): Promise<SearchPreparation>;
 }
 
 class OpenAIWebSearch implements WebSearchProvider {
@@ -41,12 +42,34 @@ interface TavilyResult {
   published_date?: string;
 }
 
+function hostOf(url: string): string | null {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return null;
+  }
+}
+
 class TavilyWebSearch implements WebSearchProvider {
   readonly name = "tavily";
   constructor(private readonly apiKey: string) {}
 
-  async prepare(queries: string[]): Promise<SearchPreparation> {
+  async prepare(queries: string[], sites: string[] = []): Promise<SearchPreparation> {
     const results: TavilyResult[] = [];
+    const domains = [...new Set(sites.map(hostOf).filter((h): h is string => Boolean(h)))].slice(0, 10);
+    if (domains.length && queries[0]) {
+      try {
+        const res = await fetch("https://api.tavily.com/search", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${this.apiKey}` },
+          body: JSON.stringify({ query: queries[0], max_results: 5, topic: "general", include_domains: domains, search_depth: "basic" }),
+          signal: AbortSignal.timeout(20_000),
+        });
+        if (res.ok) results.push(...(((await res.json()) as { results?: TavilyResult[] }).results ?? []));
+      } catch {
+        // 참고 사이트 검색 실패는 일반 검색을 막지 않는다
+      }
+    }
     for (const query of queries.slice(0, 4)) {
       try {
         const res = await fetch("https://api.tavily.com/search", {
