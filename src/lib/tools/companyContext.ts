@@ -46,9 +46,9 @@ export function formatCompanyContext(c: CompanyContext): string {
     `브랜드 주제: ${c.brandTopics.join(", ") || "(미설정)"}`,
     `조사 키워드: ${c.researchKeywords.join(", ") || "(미설정)"}`,
     c.referenceSites.length
-      ? `참고 사이트 (CEO 가 운영하는 사이트 — 조사 시 우선 확인):
-${c.referenceSites.map((s) => `- ${s.label ? `${s.label}: ` : ""}${s.url}`).join("
-")}`
+      ? `참고 사이트 (CEO 가 운영하는 사이트 — 조사 시 우선 확인):\n${c.referenceSites
+          .map((s) => `- ${s.label ? `${s.label}: ` : ""}${s.url}`)
+          .join("\n")}`
       : null,
   ]
     .filter(Boolean)
