@@ -8,7 +8,7 @@ import { EmptyState, PageHeader, ScorePill } from "@/components/ui/misc";
 import { StatusSelect } from "@/components/app/status-select";
 import { setOpportunityStatus } from "./actions";
 
-export const metadata: Metadata = { title: "Opportunity Board" };
+export const metadata: Metadata = { title: "사업 기회" };
 
 const DIFFICULTY = { low: "쉬움", medium: "보통", high: "어려움" } as const;
 
@@ -19,7 +19,7 @@ export default async function OpportunitiesPage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="Opportunity Board" description="AI 가 발견한 사업 아이디어. 상태를 바꿔 검증 단계를 관리하세요." />
+      <PageHeader title="사업 기회" description="AI 가 발견한 사업 아이디어. 상태를 바꿔 검증 단계를 관리하세요." />
       {opps?.length ? (
         <div className="flex gap-3 overflow-x-auto pb-2">
           {OPPORTUNITY_STATUSES.map((status) => {

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageHeader, ScorePill } from "@/components/ui/misc";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Trend Radar" };
+export const metadata: Metadata = { title: "트렌드 레이더" };
 
 function Delta({ value }: { value: number | null }) {
   if (value === null) return <span className="text-xs text-muted-foreground">-</span>;
@@ -45,7 +45,7 @@ export default async function TrendsPage({ searchParams }: { searchParams: Promi
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Trend Radar"
+        title="트렌드 레이더"
         description={`Trend Score = Novelty ${TREND_WEIGHTS.novelty * 100}% · Growth ${TREND_WEIGHTS.growth * 100}% · Business ${TREND_WEIGHTS.business * 100}% · Developer ${TREND_WEIGHTS.developer * 100}% · Content ${TREND_WEIGHTS.content * 100}%`}
       />
       <nav className="flex flex-wrap gap-1.5" aria-label="카테고리">

@@ -10,7 +10,7 @@ import { StatusSelect } from "@/components/app/status-select";
 import { formatDate } from "@/lib/utils";
 import { setContentStatus } from "./actions";
 
-export const metadata: Metadata = { title: "Content Factory" };
+export const metadata: Metadata = { title: "콘텐츠 공장" };
 
 export default async function ContentPage({ searchParams }: { searchParams: Promise<{ platform?: string }> }) {
   const { platform } = await searchParams;
@@ -31,7 +31,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Content Factory"
+        title="콘텐츠 공장"
         description="Trend → Angle → Instagram / Threads / Blog / Reels. 점수 = Trend · Originality · Audience Fit · Save · Share · Brand Fit (각 20점, 100점 환산)"
         actions={
           <Button asChild variant="outline">

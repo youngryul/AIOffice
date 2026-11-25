@@ -15,7 +15,7 @@ import { daysAgoIso } from "@/lib/time";
 import { disconnectNotion } from "./actions";
 import { ParentPagePicker, QueueActions, TokenConnectForm } from "./notion-panels";
 
-export const metadata: Metadata = { title: "Notion" };
+export const metadata: Metadata = { title: "노션" };
 
 export default async function NotionPage({ searchParams }: { searchParams: Promise<{ error?: string; connected?: string }> }) {
   const { error: oauthError, connected } = await searchParams;
@@ -50,7 +50,7 @@ export default async function NotionPage({ searchParams }: { searchParams: Promi
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="Notion 연동" description="AI Result → Supabase → Notion Sync Queue → Notion API. Notion 장애가 AI 업무를 멈추지 않습니다." />
+      <PageHeader title="노션 연동" description="AI Result → Supabase → Notion Sync Queue → Notion API. Notion 장애가 AI 업무를 멈추지 않습니다." />
       {oauthError ? <p className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">Notion OAuth 실패: {oauthError}</p> : null}
       {connected ? <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">Notion 계정이 연결되었습니다. 상위 페이지를 선택하세요.</p> : null}
 

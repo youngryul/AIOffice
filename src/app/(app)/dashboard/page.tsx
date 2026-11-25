@@ -10,7 +10,7 @@ import { WorkdayRunner } from "@/components/app/workday-runner";
 import { Stat } from "@/components/ui/misc";
 import { formatUsd } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { title: "대시보드" };
 
 export default async function DashboardPage() {
   const { supabase, companyId, company, settings } = await requireCompany();

@@ -26,12 +26,12 @@ export interface OfficeEmployee {
 }
 
 const ROOMS: { key: Department | "meeting"; label: string; deco: string; tone: string }[] = [
-  { key: "executive", label: "CEO ROOM", deco: "👑", tone: "bg-[oklch(0.96_0.03_300)] dark:bg-[oklch(0.27_0.04_300)]" },
+  { key: "executive", label: "CEO실", deco: "👑", tone: "bg-[oklch(0.96_0.03_300)] dark:bg-[oklch(0.27_0.04_300)]" },
   { key: "meeting", label: "회의실", deco: "☕", tone: "bg-[oklch(0.97_0.04_85)] dark:bg-[oklch(0.27_0.04_70)]" },
-  { key: "research", label: "Research Team", deco: "🔭", tone: "bg-[oklch(0.96_0.03_230)] dark:bg-[oklch(0.27_0.04_240)]" },
-  { key: "content", label: "Content Team", deco: "🌷", tone: "bg-[oklch(0.96_0.03_10)] dark:bg-[oklch(0.27_0.04_10)]" },
-  { key: "strategy", label: "Strategy Team", deco: "🪴", tone: "bg-[oklch(0.96_0.04_150)] dark:bg-[oklch(0.27_0.04_150)]" },
-  { key: "quality", label: "Quality Team", deco: "🔎", tone: "bg-[oklch(0.96_0.02_70)] dark:bg-[oklch(0.27_0.02_60)]" },
+  { key: "research", label: "리서치팀", deco: "🔭", tone: "bg-[oklch(0.96_0.03_230)] dark:bg-[oklch(0.27_0.04_240)]" },
+  { key: "content", label: "콘텐츠팀", deco: "🌷", tone: "bg-[oklch(0.96_0.03_10)] dark:bg-[oklch(0.27_0.04_10)]" },
+  { key: "strategy", label: "전략팀", deco: "🪴", tone: "bg-[oklch(0.96_0.04_150)] dark:bg-[oklch(0.27_0.04_150)]" },
+  { key: "quality", label: "품질팀", deco: "🔎", tone: "bg-[oklch(0.96_0.02_70)] dark:bg-[oklch(0.27_0.02_60)]" },
 ];
 
 const ANIMATION: Record<EmployeeStatus, string> = {

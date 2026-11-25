@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/ui/misc";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Content Calendar" };
+export const metadata: Metadata = { title: "콘텐츠 캘린더" };
 
 const PLATFORM_TONE: Record<Platform, string> = {
   instagram: "bg-pink-100 text-pink-800 dark:bg-pink-950 dark:text-pink-300",
@@ -49,7 +49,7 @@ export default async function ContentCalendarPage({ searchParams }: { searchPara
   return (
     <div className="grid gap-6">
       <PageHeader
-        title="Content Calendar"
+        title="콘텐츠 캘린더"
         description="콘텐츠 상세 화면에서 발행 예정일을 지정하면 캘린더에 표시됩니다."
         actions={
           <>

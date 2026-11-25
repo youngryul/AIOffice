@@ -144,9 +144,9 @@ export const MVP_ROLES: RoleKey[] = (Object.values(ROLE_CATALOG) as RoleDefiniti
 export const RESEARCH_ROLES: RoleKey[] = ["ai_trend_researcher", "vibe_coding_researcher", "market_researcher"];
 
 export const DEPARTMENT_LABELS: Record<Department, string> = {
-  executive: "CEO Room",
-  research: "Research Team",
-  strategy: "Strategy Team",
-  content: "Content Team",
-  quality: "Quality Team",
+  executive: "CEO실",
+  research: "리서치팀",
+  strategy: "전략팀",
+  content: "콘텐츠팀",
+  quality: "품질팀",
 };

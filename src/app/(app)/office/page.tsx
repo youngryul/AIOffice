@@ -7,7 +7,7 @@ import { OfficeView } from "@/components/app/office-view";
 import { WorkdayRunner } from "@/components/app/workday-runner";
 import { PageHeader } from "@/components/ui/misc";
 
-export const metadata: Metadata = { title: "Office" };
+export const metadata: Metadata = { title: "오피스" };
 
 export default async function OfficePage() {
   const { supabase, companyId, settings } = await requireCompany();
@@ -16,7 +16,7 @@ export default async function OfficePage() {
 
   return (
     <div className="grid gap-6">
-      <PageHeader title="AI Office" description="AI 직원들이 실제 회사처럼 출근해서 조사하고, 회의하고, 보고합니다." />
+      <PageHeader title="AI 오피스" description="AI 직원들이 실제 회사처럼 출근해서 조사하고, 회의하고, 보고합니다." />
       <div className="rounded-xl border bg-card p-4">
         <WorkdayRunner initialRun={run} aiReady={featureFlags().openai} />
       </div>

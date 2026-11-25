@@ -21,19 +21,19 @@ import {
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon },
-  { href: "/office", label: "Office", icon: Building2Icon },
+  { href: "/dashboard", label: "대시보드", icon: LayoutDashboardIcon },
+  { href: "/office", label: "오피스", icon: Building2Icon },
   { href: "/approvals", label: "CEO 결재", icon: CheckSquareIcon, badgeKey: "approvals" as const },
   { href: "/employees", label: "직원", icon: UsersIcon },
   { href: "/tasks", label: "업무", icon: ListTodoIcon },
   { href: "/research", label: "리서치", icon: FileSearchIcon },
-  { href: "/trends", label: "Trend Radar", icon: RadarIcon },
-  { href: "/opportunities", label: "Opportunity Board", icon: LightbulbIcon },
-  { href: "/content", label: "Content Factory", icon: PenLineIcon },
-  { href: "/content/calendar", label: "Content Calendar", icon: CalendarDaysIcon },
+  { href: "/trends", label: "트렌드 레이더", icon: RadarIcon },
+  { href: "/opportunities", label: "사업 기회", icon: LightbulbIcon },
+  { href: "/content", label: "콘텐츠 공장", icon: PenLineIcon },
+  { href: "/content/calendar", label: "콘텐츠 캘린더", icon: CalendarDaysIcon },
   { href: "/meetings", label: "회의", icon: MessagesSquareIcon },
   { href: "/projects", label: "프로젝트", icon: FolderKanbanIcon },
-  { href: "/notion", label: "Notion", icon: NotebookTabsIcon },
+  { href: "/notion", label: "노션", icon: NotebookTabsIcon },
   { href: "/settings", label: "설정", icon: SettingsIcon },
 ];
 
