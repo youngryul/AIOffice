@@ -10,6 +10,9 @@ import type { RoleKey } from "@/lib/types/domain";
  * 경로를 적지 않은 역할은 기본 동물 캐릭터(critter.tsx)로 표시된다.
  * 존재하지 않는 파일을 적으면 이미지가 깨지므로, 파일을 넣은 역할만 적을 것.
  */
+/** CEO(사용자 본인) 캐릭터. 배경이 투명한 PNG. */
+export const CEO_AVATAR_IMAGE = "/avatars/ceo.png";
+
 export const AVATAR_IMAGES: Partial<Record<RoleKey, string>> = {
   chief_of_staff: "/avatars/chief_of_staff.png",
   ai_trend_researcher: "/avatars/ai_trend_researcher.png",

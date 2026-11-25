@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CEO_AVATAR_IMAGE } from "@/lib/avatar-images";
 import Link from "next/link";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { ScoreBar } from "@/components/ui/misc";
@@ -96,9 +97,8 @@ export function OfficeView({ employees: initial, live }: { employees: OfficeEmpl
               <div className="mt-1 flex flex-wrap gap-2">
                 {room.key === "executive" ? (
                   <div className="flex w-20 flex-col items-center gap-1 text-center">
-                    <span className="flex size-14 items-center justify-center rounded-full border-2 border-border-strong bg-card text-3xl" aria-hidden>
-                      👑
-                    </span>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- 정적 캐릭터 이미지 */}
+                    <img src={CEO_AVATAR_IMAGE} alt="" aria-hidden draggable={false} className="size-14 object-contain" />
                     <span className="text-xs font-medium">CEO (나)</span>
                   </div>
                 ) : null}
