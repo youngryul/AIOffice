@@ -7,6 +7,7 @@ import {
   CalendarDaysIcon,
   CheckSquareIcon,
   FileSearchIcon,
+  FileTextIcon,
   FolderKanbanIcon,
   LayoutDashboardIcon,
   LightbulbIcon,
@@ -23,6 +24,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/dashboard", label: "대시보드", icon: LayoutDashboardIcon },
   { href: "/office", label: "오피스", icon: Building2Icon },
+  { href: "/report", label: "일일 보고서", icon: FileTextIcon },
   { href: "/approvals", label: "CEO 결재", icon: CheckSquareIcon, badgeKey: "approvals" as const },
   { href: "/employees", label: "직원", icon: UsersIcon },
   { href: "/tasks", label: "업무", icon: ListTodoIcon },

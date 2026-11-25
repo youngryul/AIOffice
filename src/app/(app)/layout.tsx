@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r-2 bg-card/80 p-4 lg:flex">
+      <aside className="sticky top-0 print:!hidden hidden h-screen w-60 shrink-0 flex-col border-r-2 bg-card/80 p-4 lg:flex">
         <Link href="/dashboard" className="mb-6 flex items-center gap-2 px-2">
           <span className="flex size-11 items-center justify-center rounded-full bg-accent" aria-hidden>
             <Critter role="chief_of_staff" status="break" className="size-9 animate-wiggle" />
@@ -42,7 +42,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="border-b-2 bg-card/80 lg:hidden">
+        <header className="border-b-2 bg-card/80 lg:hidden print:hidden">
           <div className="flex items-center justify-between px-4 py-3">
             <span className="flex items-center gap-1.5 font-[family-name:var(--font-cute)] text-lg">
               <Critter role="chief_of_staff" status="break" className="size-7" /> {company.name}
