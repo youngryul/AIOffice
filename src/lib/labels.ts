@@ -44,12 +44,12 @@ export const APPROVAL_STATUS_LABELS: Record<ApprovalStatus, string> = {
 };
 
 export const OPPORTUNITY_STATUS_LABELS: Record<OpportunityStatus, string> = {
-  IDEA: "Idea",
-  RESEARCHING: "Researching",
-  VALIDATING: "Validating",
-  BUILD: "Build",
-  LAUNCHED: "Launched",
-  ARCHIVED: "Archived",
+  IDEA: "아이디어",
+  RESEARCHING: "조사 중",
+  VALIDATING: "검증 중",
+  BUILD: "개발 중",
+  LAUNCHED: "출시",
+  ARCHIVED: "보관",
 };
 
 export const CONTENT_STATUS_LABELS: Record<ContentStatus, string> = {

@@ -25,38 +25,36 @@ export default async function OpportunitiesPage() {
           {OPPORTUNITY_STATUSES.map((status) => {
             const items = opps.filter((o) => o.status === status);
             return (
-              <section key={status} className="flex w-72 shrink-0 flex-col gap-2 rounded-xl bg-muted/50 p-2" aria-label={status}>
-                <h2 className="flex items-center justify-between px-1 text-xs font-semibold text-muted-foreground uppercase">
+              <section key={status} className="flex w-80 min-w-0 shrink-0 flex-col gap-3 rounded-xl bg-muted/50 p-2" aria-label={status}>
+                <h2 className="flex items-center justify-between px-1 text-sm font-semibold text-muted-foreground">
                   {OPPORTUNITY_STATUS_LABELS[status as OpportunityStatus]}
                   <span>{items.length}</span>
                 </h2>
                 {items.map((o) => (
-                  <article key={o.id} className="grid gap-2 rounded-lg border bg-card p-3 text-sm shadow-xs">
+                  <article key={o.id} className="grid min-w-0 gap-3 rounded-lg border bg-card p-3 text-sm shadow-xs">
                     <div className="flex items-start justify-between gap-2">
-                      <Link href={`/opportunities/${o.id}`} className="font-medium hover:underline">
+                      <Link href={`/opportunities/${o.id}`} className="min-w-0 font-medium leading-snug break-words hover:underline">
                         {o.title}
                       </Link>
-                      <ScorePill value={o.opportunity_score} />
+                      <ScorePill value={o.opportunity_score} className="shrink-0" />
                     </div>
-                    <dl className="grid gap-1 text-xs">
+                    <dl className="grid gap-1.5 text-xs leading-relaxed">
                       <div>
-                        <dt className="inline font-semibold">Problem </dt>
-                        <dd className="inline text-muted-foreground">{o.problem}</dd>
+                        <dt className="block font-semibold">문제</dt>
+                        <dd className="line-clamp-3 break-words text-muted-foreground">{o.problem}</dd>
                       </div>
                       <div>
-                        <dt className="inline font-semibold">Target </dt>
-                        <dd className="inline text-muted-foreground">{o.target_user}</dd>
+                        <dt className="block font-semibold">대상</dt>
+                        <dd className="line-clamp-2 break-words text-muted-foreground">{o.target_user}</dd>
                       </div>
                       <div>
-                        <dt className="inline font-semibold">Model </dt>
-                        <dd className="inline text-muted-foreground">{o.business_model}</dd>
+                        <dt className="block font-semibold">수익 모델</dt>
+                        <dd className="line-clamp-2 break-words text-muted-foreground">{o.business_model}</dd>
                       </div>
                     </dl>
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex gap-1">
-                        <Badge variant="outline">{DIFFICULTY[o.difficulty as keyof typeof DIFFICULTY]}</Badge>
-                        {o.development_time ? <Badge variant="secondary">{o.development_time}</Badge> : null}
-                      </div>
+                    {o.development_time ? <p className="line-clamp-2 text-xs break-words text-muted-foreground">⏱ {o.development_time}</p> : null}
+                    <div className="flex items-center justify-between gap-2 border-t pt-2">
+                      <Badge variant="outline">난이도 {DIFFICULTY[o.difficulty as keyof typeof DIFFICULTY]}</Badge>
                       <StatusSelect label="상태 변경" value={o.status} options={options} action={setOpportunityStatus.bind(null, o.id)} />
                     </div>
                   </article>
