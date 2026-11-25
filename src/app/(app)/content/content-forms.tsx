@@ -32,12 +32,12 @@ export function PerformanceForm({ contentId }: { contentId: string }) {
   const [state, action] = useActionState<ContentActionState, FormData>(recordPerformance.bind(null, contentId), {});
   useToast(state, "성과를 기록했습니다. 콘텐츠 전략 학습에 반영됩니다.");
   const fields = [
-    ["views", "Views"],
-    ["likes", "Likes"],
-    ["comments", "Comments"],
-    ["saves", "Saves"],
-    ["shares", "Shares"],
-    ["followers_gained", "Followers Gained"],
+    ["views", "조회수"],
+    ["likes", "좋아요"],
+    ["comments", "댓글"],
+    ["saves", "저장"],
+    ["shares", "공유"],
+    ["followers_gained", "팔로워 증가"],
   ] as const;
   return (
     <form action={action} className="grid gap-3 sm:grid-cols-3">

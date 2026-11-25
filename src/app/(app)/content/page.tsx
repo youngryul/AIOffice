@@ -35,7 +35,7 @@ export default async function ContentPage({ searchParams }: { searchParams: Prom
         description="Trend → Angle → Instagram / Threads / Blog / Reels. 점수 = Trend · Originality · Audience Fit · Save · Share · Brand Fit (각 20점, 100점 환산)"
         actions={
           <Button asChild variant="outline">
-            <Link href="/content/calendar">Content Calendar</Link>
+            <Link href="/content/calendar">콘텐츠 캘린더</Link>
           </Button>
         }
       />

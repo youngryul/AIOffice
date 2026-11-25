@@ -53,12 +53,12 @@ export const OPPORTUNITY_STATUS_LABELS: Record<OpportunityStatus, string> = {
 };
 
 export const CONTENT_STATUS_LABELS: Record<ContentStatus, string> = {
-  IDEA: "Idea",
-  WRITING: "Writing",
-  DESIGN: "Design",
-  CEO_REVIEW: "CEO Review",
-  SCHEDULED: "Scheduled",
-  PUBLISHED: "Published",
+  IDEA: "아이디어",
+  WRITING: "작성 중",
+  DESIGN: "디자인",
+  CEO_REVIEW: "CEO 검토",
+  SCHEDULED: "발행 예약",
+  PUBLISHED: "발행 완료",
 };
 
 export const PLATFORM_LABELS: Record<Platform, string> = {

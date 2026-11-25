@@ -26,7 +26,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   chief_of_staff: {
     key: "chief_of_staff",
     title: "비서실장 (Chief of Staff)",
-    defaultName: "Sophie",
+    defaultName: "소피",
     avatar: "🧑‍💼",
     department: "executive",
     defaultPosition: "executive",
@@ -40,7 +40,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   ai_trend_researcher: {
     key: "ai_trend_researcher",
     title: "AI 트렌드 리서처",
-    defaultName: "Ray",
+    defaultName: "레이",
     avatar: "🔭",
     department: "research",
     defaultPosition: "associate",
@@ -54,7 +54,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   vibe_coding_researcher: {
     key: "vibe_coding_researcher",
     title: "바이브코딩 리서처",
-    defaultName: "Cody",
+    defaultName: "코디",
     avatar: "👩‍💻",
     department: "research",
     defaultPosition: "associate",
@@ -68,7 +68,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   market_researcher: {
     key: "market_researcher",
     title: "시장조사 분석가",
-    defaultName: "Mark",
+    defaultName: "마크",
     avatar: "📊",
     department: "research",
     defaultPosition: "associate",
@@ -82,7 +82,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   business_analyst: {
     key: "business_analyst",
     title: "사업기회 분석가 (Business Analyst)",
-    defaultName: "Ben",
+    defaultName: "벤",
     avatar: "💼",
     department: "strategy",
     defaultPosition: "senior",
@@ -96,7 +96,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   brand_strategist: {
     key: "brand_strategist",
     title: "브랜드 전략가",
-    defaultName: "Bree",
+    defaultName: "브리",
     avatar: "🎯",
     department: "strategy",
     defaultPosition: "senior",
@@ -110,7 +110,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   content_strategist: {
     key: "content_strategist",
     title: "콘텐츠 기획자 (Content Strategist)",
-    defaultName: "Luna",
+    defaultName: "루나",
     avatar: "✍️",
     department: "content",
     defaultPosition: "senior",
@@ -124,7 +124,7 @@ export const ROLE_CATALOG: Record<RoleKey, RoleDefinition> = {
   fact_checker: {
     key: "fact_checker",
     title: "팩트체커",
-    defaultName: "Faye",
+    defaultName: "페이",
     avatar: "🔎",
     department: "quality",
     defaultPosition: "manager",

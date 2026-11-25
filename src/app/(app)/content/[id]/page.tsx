@@ -35,12 +35,12 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
   const trend = c.trends as { id: string; name: string } | null;
 
   const scores = [
-    ["Trend", c.score_trend],
-    ["Originality", c.score_originality],
-    ["Audience Fit", c.score_audience_fit],
-    ["Save Potential", c.score_save],
-    ["Share Potential", c.score_share],
-    ["Brand Fit", c.score_brand_fit],
+    ["트렌드", c.score_trend],
+    ["독창성", c.score_originality],
+    ["타깃 적합도", c.score_audience_fit],
+    ["저장 유도", c.score_save],
+    ["공유 유도", c.score_share],
+    ["브랜드 적합도", c.score_brand_fit],
   ] as const;
 
   return (
@@ -71,7 +71,7 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
           <div className="flex items-center gap-3">
             <StatusSelect label="상태" value={c.status} options={CONTENT_STATUSES.map((s) => ({ value: s, label: CONTENT_STATUS_LABELS[s] }))} action={setContentStatus.bind(null, c.id)} />
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">Content Score</p>
+              <p className="text-xs text-muted-foreground">콘텐츠 점수</p>
               <p className="text-4xl font-bold tabular-nums">{c.total_score}</p>
             </div>
           </div>
@@ -82,13 +82,13 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
         <section className="grid content-start gap-4 rounded-xl border bg-card p-5 lg:col-span-2">
           {body.carousel_title ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Carousel Title</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">캐러셀 제목</h2>
               <p className="mt-1 font-medium">{body.carousel_title}</p>
             </div>
           ) : null}
           {body.slides?.length ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Slides</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">슬라이드</h2>
               <ol className="mt-2 grid gap-2 sm:grid-cols-5">
                 {body.slides.map((s, i) => (
                   <li key={i} className="flex aspect-[4/5] flex-col justify-between rounded-lg border bg-muted/40 p-2 text-xs">
@@ -101,7 +101,7 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
           ) : null}
           {body.outline?.length ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Outline</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">아웃라인</h2>
               <ol className="mt-1 list-decimal pl-5 text-sm">
                 {body.outline.map((o, i) => (
                   <li key={i}>{o}</li>
@@ -111,7 +111,7 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
           ) : null}
           {body.caption ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Caption</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">캡션</h2>
               <p className="mt-1 text-sm whitespace-pre-line">{body.caption}</p>
             </div>
           ) : null}
@@ -123,14 +123,14 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
           {body.hashtags?.length ? <p className="text-sm text-primary">{body.hashtags.join(" ")}</p> : null}
           {body.reels_hook || body.reels_script ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Reels</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">릴스</h2>
               {body.reels_hook ? <p className="mt-1 text-sm font-medium">Hook: {body.reels_hook}</p> : null}
               {body.reels_script ? <p className="mt-1 text-sm whitespace-pre-line">{body.reels_script}</p> : null}
             </div>
           ) : null}
           {body.image_prompt ? (
             <div>
-              <h2 className="text-xs font-semibold text-muted-foreground">Image Prompt</h2>
+              <h2 className="text-xs font-semibold text-muted-foreground">이미지 프롬프트</h2>
               <p className="mt-1 rounded-md bg-muted/50 p-2 font-mono text-xs">{body.image_prompt}</p>
             </div>
           ) : null}
@@ -161,12 +161,12 @@ export default async function ContentDetailPage({ params }: { params: Promise<{ 
               <thead className="text-left text-xs text-muted-foreground">
                 <tr>
                   <th className="py-1 pr-3 font-medium">기록일</th>
-                  <th className="py-1 pr-3 font-medium">Views</th>
-                  <th className="py-1 pr-3 font-medium">Likes</th>
-                  <th className="py-1 pr-3 font-medium">Comments</th>
-                  <th className="py-1 pr-3 font-medium">Saves</th>
-                  <th className="py-1 pr-3 font-medium">Shares</th>
-                  <th className="py-1 pr-3 font-medium">Followers</th>
+                  <th className="py-1 pr-3 font-medium">조회수</th>
+                  <th className="py-1 pr-3 font-medium">좋아요</th>
+                  <th className="py-1 pr-3 font-medium">댓글</th>
+                  <th className="py-1 pr-3 font-medium">저장</th>
+                  <th className="py-1 pr-3 font-medium">공유</th>
+                  <th className="py-1 pr-3 font-medium">팔로워</th>
                 </tr>
               </thead>
               <tbody className="tabular-nums">
